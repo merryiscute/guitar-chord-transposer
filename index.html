@@ -119,21 +119,69 @@
   .mode-card.selected .mc-title { color: var(--accent); }
   .mode-card .mc-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.45; }
 
-  /* ── 고급 설정 (튜닝) ── */
-  details.adv {
-    margin-top: 16px; border: 1px solid var(--border); border-radius: 10px;
-    background: var(--surface2); overflow: hidden;
+  /* ── 튜닝 블록 ── */
+  .tuning-block {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 18px;
   }
-  details.adv summary {
-    padding: 12px 16px; cursor: pointer; font-size: 0.85rem; color: var(--muted);
-    user-select: none; list-style: none; display: flex; align-items: center; gap: 8px;
-  }
-  details.adv summary::-webkit-details-marker { display: none; }
-  details.adv summary::before { content: '▸'; transition: transform .15s; }
-  details.adv[open] summary::before { transform: rotate(90deg); }
-  details.adv summary:hover { color: var(--text); }
-  details.adv .adv-body { padding: 4px 16px 16px; }
+  .tuning-block-title { font-size: 0.88rem; font-weight: 700; color: var(--purple); margin-bottom: 10px; }
   .tuning-note { font-size: 0.75rem; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+
+  /* ── 입력 방식 탭 ── */
+  .tab-btns { display: flex; gap: 8px; margin-bottom: 14px; }
+  .tab-btn {
+    flex: 1; background: var(--surface2); border: 2px solid var(--border);
+    color: var(--muted); padding: 11px 14px; border-radius: 10px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: .15s;
+  }
+  .tab-btn:hover { border-color: #4a4a70; }
+  .tab-btn.selected { border-color: var(--accent); color: var(--accent); background: #1e1c2e; }
+
+  /* ── 지판 (fretboard) ── */
+  .fb-scroll { overflow-x: auto; padding-bottom: 6px; }
+  .fb-table { border-collapse: collapse; user-select: none; }
+  .fb-table th {
+    font-size: 0.68rem; color: var(--muted); font-weight: 400;
+    padding: 2px 0 6px; text-align: center; min-width: 38px;
+  }
+  .fb-str-label {
+    font-size: 0.72rem; color: var(--muted); padding-right: 8px;
+    text-align: right; white-space: nowrap; font-family: monospace;
+  }
+  .fb-open-cell {
+    width: 34px; height: 30px; text-align: center; cursor: pointer;
+    border: 1.5px solid var(--border); border-radius: 6px;
+    font-size: 0.85rem; transition: .12s; background: var(--surface2);
+  }
+  .fb-open-cell.open { color: var(--green); border-color: var(--green); }
+  .fb-open-cell.muted { color: var(--red); }
+  .fb-cell {
+    position: relative; height: 30px; min-width: 38px; cursor: pointer;
+    border-bottom: 1px solid #3a3a55;
+  }
+  .fb-cell::after { /* 프렛선 */
+    content: ''; position: absolute; right: 0; top: -1px; bottom: -1px;
+    width: 2px; background: #3a3a55;
+  }
+  .fb-cell:hover { background: rgba(240,192,64,0.08); }
+  .fb-cell .fb-dot {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 20px; height: 20px; border-radius: 50%; background: var(--accent);
+    color: #0d0d1a; font-size: 0.62rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .fb-string-line {
+    position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #555;
+  }
+  .fb-inlay { color: #444; font-size: 0.65rem; }
+  .fb-result-row { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+  .fb-detected {
+    flex: 1; min-width: 160px; background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 10px 16px; font-size: 1rem;
+  }
+  .fb-detected strong { color: var(--accent); font-size: 1.15rem; }
+  .fb-detected.none { color: var(--muted); font-size: 0.85rem; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
   /* ── 변환 버튼 ── */
   .go-wrap { text-align: center; margin: 24px 0; }
@@ -202,65 +250,117 @@
 
 <div class="wizard">
 
-  <!-- ═══════ STEP 1: 코드 진행 입력 ═══════ -->
+  <!-- ═══════ STEP 1: 튜닝 + 코드 진행 입력 ═══════ -->
   <div class="step-card">
     <div class="step-head">
       <div class="step-num">1</div>
-      <div class="step-title">어떤 코드를 연주하나요?</div>
+      <div class="step-title">튜닝을 확인하고, 코드를 입력하세요</div>
     </div>
     <p class="step-desc">
-      손으로 잡는 코드를 순서대로 추가해주세요. 악보나 코드표에 적힌 그대로 넣으면 됩니다.<br>
-      분수코드(예: G/B)는 "베이스음"까지 선택하면 돼요. 잘 모르겠으면 아래 <b>예시</b>를 눌러보세요!
+      먼저 기타 튜닝을 확인해주세요. 일반 기타라면 그대로 두면 됩니다.<br>
+      그 다음 연주하는 코드를 순서대로 추가해주세요 — <b>드롭다운으로 고르거나, 지판을 직접 눌러서</b> 입력할 수 있어요.
     </p>
     <div class="step-body">
-      <div class="row">
-        <div class="field">
-          <label>코드 (루트음)</label>
-          <select id="selRoot" style="min-width:80px">
-            <option>C</option><option>C#</option><option>D</option><option>Eb</option>
-            <option>E</option><option>F</option><option>F#</option><option>G</option>
-            <option>Ab</option><option>A</option><option>Bb</option><option>B</option>
-          </select>
+
+      <!-- ① 튜닝 설정 (먼저) -->
+      <div class="tuning-block">
+        <div class="tuning-block-title">🎼 기타 튜닝</div>
+        <div class="row">
+          <div class="field">
+            <label>프리셋</label>
+            <select id="tuningPreset" style="min-width:180px" onchange="applyTuningPreset()">
+              <option value="EADGBE">스탠다드 (EADGBE)</option>
+              <option value="DADGBE">드랍 D (DADGBE)</option>
+              <option value="DADGAD">DADGAD</option>
+              <option value="CGDGAD">CGDGAD</option>
+              <option value="CGEbFBbEb">CGD#FA#D#</option>
+              <option value="custom">커스텀 (직접 설정)</option>
+            </select>
+          </div>
+          <div class="field"><label>6번줄 (굵은 줄)</label><select id="tun0" style="min-width:68px" onchange="onTuningStringChange()"></select></div>
+          <div class="field"><label>5번줄</label><select id="tun1" style="min-width:68px" onchange="onTuningStringChange()"></select></div>
+          <div class="field"><label>4번줄</label><select id="tun2" style="min-width:68px" onchange="onTuningStringChange()"></select></div>
+          <div class="field"><label>3번줄</label><select id="tun3" style="min-width:68px" onchange="onTuningStringChange()"></select></div>
+          <div class="field"><label>2번줄</label><select id="tun4" style="min-width:68px" onchange="onTuningStringChange()"></select></div>
+          <div class="field"><label>1번줄 (얇은 줄)</label><select id="tun5" style="min-width:68px" onchange="onTuningStringChange()"></select></div>
         </div>
-        <div class="field">
-          <label>종류</label>
-          <select id="selType" style="min-width:120px">
-            <option value="major">Major (밝은 소리)</option>
-            <option value="minor">minor (어두운 소리)</option>
-            <option value="7">7</option>
-            <option value="maj7">maj7</option>
-            <option value="m7">m7</option>
-            <option value="sus2">sus2</option>
-            <option value="sus4">sus4</option>
-            <option value="add9">add9</option>
-            <option value="6">6</option>
-            <option value="m6">m6</option>
-            <option value="9">9</option>
-            <option value="maj9">maj9</option>
-            <option value="m9">m9</option>
-            <option value="11">11</option>
-            <option value="13">13</option>
-            <option value="dim">dim</option>
-            <option value="dim7">dim7</option>
-            <option value="m7b5">m7b5</option>
-            <option value="aug">aug</option>
-            <option value="mmaj7">mmaj7</option>
-            <option value="7sus4">7sus4</option>
-            <option value="5">5 (파워코드)</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>베이스음 (분수코드)</label>
-          <select id="selBass" style="min-width:95px">
-            <option value="">없음</option>
-            <option>C</option><option>C#</option><option>D</option><option>Eb</option>
-            <option>E</option><option>F</option><option>F#</option><option>G</option>
-            <option>Ab</option><option>A</option><option>Bb</option><option>B</option>
-          </select>
-        </div>
-        <button class="btn" onclick="addChord()">＋ 코드 추가</button>
+        <p class="tuning-note">※ 변칙 튜닝을 선택하면 운지를 자동으로 계산해서 보여드려요. 일반 기타는 스탠다드 그대로 두세요.</p>
       </div>
 
+      <!-- ② 코드 입력 방식 탭 -->
+      <div class="tab-btns">
+        <button class="tab-btn selected" id="tabDropdown" onclick="selectInputTab('dropdown')">📋 드롭다운으로 선택</button>
+        <button class="tab-btn" id="tabFretboard" onclick="selectInputTab('fretboard')">🎸 지판을 눌러서 입력</button>
+      </div>
+
+      <!-- 드롭다운 패널 -->
+      <div id="panelDropdown">
+        <div class="row">
+          <div class="field">
+            <label>코드 (루트음)</label>
+            <select id="selRoot" style="min-width:80px">
+              <option>C</option><option>C#</option><option>D</option><option>Eb</option>
+              <option>E</option><option>F</option><option>F#</option><option>G</option>
+              <option>Ab</option><option>A</option><option>Bb</option><option>B</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>종류</label>
+            <select id="selType" style="min-width:120px">
+              <option value="major">Major (밝은 소리)</option>
+              <option value="minor">minor (어두운 소리)</option>
+              <option value="7">7</option>
+              <option value="maj7">maj7</option>
+              <option value="m7">m7</option>
+              <option value="sus2">sus2</option>
+              <option value="sus4">sus4</option>
+              <option value="add9">add9</option>
+              <option value="6">6</option>
+              <option value="m6">m6</option>
+              <option value="9">9</option>
+              <option value="maj9">maj9</option>
+              <option value="m9">m9</option>
+              <option value="11">11</option>
+              <option value="13">13</option>
+              <option value="dim">dim</option>
+              <option value="dim7">dim7</option>
+              <option value="m7b5">m7b5</option>
+              <option value="aug">aug</option>
+              <option value="mmaj7">mmaj7</option>
+              <option value="7sus4">7sus4</option>
+              <option value="5">5 (파워코드)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>베이스음 (분수코드)</label>
+            <select id="selBass" style="min-width:95px">
+              <option value="">없음</option>
+              <option>C</option><option>C#</option><option>D</option><option>Eb</option>
+              <option>E</option><option>F</option><option>F#</option><option>G</option>
+              <option>Ab</option><option>A</option><option>Bb</option><option>B</option>
+            </select>
+          </div>
+          <button class="btn" onclick="addChord()">＋ 코드 추가</button>
+        </div>
+      </div>
+
+      <!-- 지판 클릭 패널 -->
+      <div id="panelFretboard" style="display:none">
+        <p style="font-size:0.8rem;color:var(--muted);margin-bottom:10px;line-height:1.5">
+          지판에서 누르는 곳을 클릭하세요. 같은 곳을 다시 누르면 해제돼요.<br>
+          왼쪽 <b>○/✕</b> 칸을 누르면 개방현 ↔ 안 치는 줄로 바뀝니다. 코드는 자동으로 감지돼요.
+        </p>
+        <div class="fb-scroll">
+          <div id="fretboard"></div>
+        </div>
+        <div class="fb-result-row">
+          <div class="fb-detected" id="fbDetected">코드를 눌러보세요</div>
+          <button class="btn" id="fbAddBtn" onclick="fbAdd()" disabled>＋ 이 코드 추가</button>
+          <button class="btn-outline" style="height:40px" onclick="fbClear()">지판 초기화</button>
+        </div>
+      </div>
+
+      <!-- 코드 진행 태그 -->
       <div class="prog-area" id="progArea">
         <span class="prog-empty" id="progEmpty">👆 위에서 코드를 추가하면 여기에 차례로 쌓여요 (드래그로 순서 변경, ✕로 삭제)</span>
       </div>
@@ -318,36 +418,6 @@
         </div>
       </div>
 
-      <details class="adv">
-        <summary>🎼 변칙 튜닝을 쓰고 있어요 (고급 설정)</summary>
-        <div class="adv-body">
-          <div class="row">
-            <div class="field">
-              <label>튜닝 프리셋</label>
-              <select id="tuningPreset" style="min-width:180px" onchange="applyTuningPreset()">
-                <option value="EADGBE">스탠다드 (EADGBE)</option>
-                <option value="DADGBE">드랍 D (DADGBE)</option>
-                <option value="DADGAD">DADGAD</option>
-                <option value="CGDGAD">CGDGAD</option>
-                <option value="CGEbFBbEb">CGD#FA#D#</option>
-                <option value="custom">커스텀 (직접 설정)</option>
-              </select>
-            </div>
-          </div>
-          <div class="row" style="margin-top:10px">
-            <div class="field"><label>6번줄 (가장 굵은 줄)</label><select id="tun0" style="min-width:70px" onchange="onTuningStringChange()"></select></div>
-            <div class="field"><label>5번줄</label><select id="tun1" style="min-width:70px" onchange="onTuningStringChange()"></select></div>
-            <div class="field"><label>4번줄</label><select id="tun2" style="min-width:70px" onchange="onTuningStringChange()"></select></div>
-            <div class="field"><label>3번줄</label><select id="tun3" style="min-width:70px" onchange="onTuningStringChange()"></select></div>
-            <div class="field"><label>2번줄</label><select id="tun4" style="min-width:70px" onchange="onTuningStringChange()"></select></div>
-            <div class="field"><label>1번줄 (가장 얇은 줄)</label><select id="tun5" style="min-width:70px" onchange="onTuningStringChange()"></select></div>
-          </div>
-          <p class="tuning-note">
-            ※ 변칙 튜닝을 선택하면 운지를 자동으로 계산해서 보여드려요.<br>
-            ※ 일반 기타라면 건드리지 않아도 됩니다 (기본값: 스탠다드).
-          </p>
-        </div>
-      </details>
     </div>
   </div>
 
@@ -464,12 +534,14 @@ function applyTuningPreset() {
   if (p === 'custom') return;
   TUNING = [...TUNING_PRESETS[p]];
   for (let i = 0; i < 6; i++) document.getElementById('tun' + i).value = TUNING[i];
+  if (typeof fbRender === 'function' && document.getElementById('panelFretboard').style.display !== 'none') fbRender();
   if (progression.length) run();
 }
 function onTuningStringChange() {
   TUNING = Array.from({length:6}, (_,i)=>document.getElementById('tun'+i).value);
   const match = Object.entries(TUNING_PRESETS).find(([,t])=>t.every((n,i)=>n===TUNING[i]));
   document.getElementById('tuningPreset').value = match ? match[0] : 'custom';
+  if (typeof fbRender === 'function' && document.getElementById('panelFretboard').style.display !== 'none') fbRender();
   if (progression.length) run();
 }
 
@@ -487,6 +559,143 @@ function selectMode(m) {
   document.getElementById('modeCardCapo').classList.toggle('selected', m === 'capo');
   document.getElementById('targetKeyField').style.display = m === 'key' ? '' : 'none';
   document.getElementById('capoDeltaField').style.display = m === 'capo' ? '' : 'none';
+}
+
+// ════════════════════════════════════════════════════════
+//  입력 방식 탭 (드롭다운 / 지판)
+// ════════════════════════════════════════════════════════
+function selectInputTab(tab) {
+  document.getElementById('tabDropdown').classList.toggle('selected', tab === 'dropdown');
+  document.getElementById('tabFretboard').classList.toggle('selected', tab === 'fretboard');
+  document.getElementById('panelDropdown').style.display = tab === 'dropdown' ? '' : 'none';
+  document.getElementById('panelFretboard').style.display = tab === 'fretboard' ? '' : 'none';
+  if (tab === 'fretboard') fbRender();
+}
+
+// ════════════════════════════════════════════════════════
+//  지판 클릭 입력 (FRETBOARD)
+// ════════════════════════════════════════════════════════
+const FB_FRETS = 12;
+// 줄별 상태: -1 뮤트, 0 개방, n 프렛 (인덱스 0 = 6번줄)
+let fbState = [-1, -1, -1, -1, -1, -1];
+
+function fbRender() {
+  const el = document.getElementById('fretboard');
+  const inlays = new Set([3, 5, 7, 9, 12]);
+
+  let html = '<table class="fb-table"><thead><tr><th></th><th>○/✕</th>';
+  for (let f = 1; f <= FB_FRETS; f++) {
+    html += `<th>${f}${inlays.has(f) ? '<div class="fb-inlay">●</div>' : ''}</th>`;
+  }
+  html += '</tr></thead><tbody>';
+
+  // 화면 위 = 1번줄(얇은 줄), 아래 = 6번줄 (타브 악보와 동일)
+  for (let row = 5; row >= 0; row--) {
+    const s = row;
+    const st = fbState[s];
+    const openCls = st === 0 ? 'open' : (st === -1 ? 'muted' : '');
+    const openSym = st === 0 ? '○' : (st === -1 ? '✕' : '·');
+    html += `<tr>
+      <td class="fb-str-label">${6 - s}번줄 ${TUNING[s]}</td>
+      <td class="fb-open-cell ${openCls}" onclick="fbToggleOpen(${s})">${openSym}</td>`;
+    for (let f = 1; f <= FB_FRETS; f++) {
+      html += `<td class="fb-cell" onclick="fbSet(${s},${f})">
+        <div class="fb-string-line"></div>
+        ${st === f ? `<div class="fb-dot">${f}</div>` : ''}
+      </td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  el.innerHTML = html;
+  fbUpdateDetected();
+}
+
+function fbSet(s, f) {
+  fbState[s] = (fbState[s] === f) ? -1 : f;
+  fbRender();
+}
+function fbToggleOpen(s) {
+  fbState[s] = (fbState[s] === 0) ? -1 : 0;
+  fbRender();
+}
+function fbClear() {
+  fbState = [-1, -1, -1, -1, -1, -1];
+  fbRender();
+}
+
+// ── 코드 감지 ──
+// 감지 우선순위: 단순한 코드 먼저
+const DETECT_ORDER = ['major','minor','5','7','m7','maj7','sus4','sus2','dim','aug','6','m6','add9','dim7','m7b5','7sus4','9','maj9','m9','mmaj7','11','13'];
+
+function fbDetect() {
+  const open = openPitches();
+  const sounded = [];
+  for (let s = 0; s < 6; s++) {
+    if (fbState[s] >= 0) sounded.push({ s, pc: (open[s] + fbState[s]) % 12 });
+  }
+  if (sounded.length < 2) return null;
+
+  const pcs = new Set(sounded.map(x => x.pc));
+  const bassPc = sounded[0].pc; // 가장 낮은 줄 = 베이스
+
+  const matches = [];
+  for (const rootPc of pcs) {
+    for (const suffix of DETECT_ORDER) {
+      const formula = CHORD_FORMULAS[suffix];
+      if (!formula) continue;
+      const fset = new Set(formula.map(i => (rootPc + i) % 12));
+      // 완전 일치
+      let exact = fset.size === pcs.size && [...pcs].every(p => fset.has(p));
+      // 5도 생략 허용 (4구성음 이상)
+      let omit5 = false;
+      if (!exact && formula.length >= 4 && formula.includes(7)) {
+        const f2 = new Set([...fset].filter(p => p !== (rootPc + 7) % 12));
+        omit5 = f2.size === pcs.size && [...pcs].every(p => f2.has(p));
+      }
+      if (exact || omit5) {
+        matches.push({ rootPc, suffix, exact, priority: DETECT_ORDER.indexOf(suffix) });
+      }
+    }
+  }
+  if (matches.length === 0) return null;
+
+  // 정렬: ① 베이스음이 루트인 해석 우선 ② 완전일치 우선 ③ 단순한 코드 우선
+  matches.sort((a, b) =>
+    (b.rootPc === bassPc) - (a.rootPc === bassPc) ||
+    b.exact - a.exact ||
+    a.priority - b.priority
+  );
+
+  const m = matches[0];
+  const root = DB_KEYS[m.rootPc];
+  const bass = (bassPc !== m.rootPc) ? DB_KEYS[bassPc] : null;
+  return { root, suffix: m.suffix, bass };
+}
+
+function fbUpdateDetected() {
+  const box = document.getElementById('fbDetected');
+  const btn = document.getElementById('fbAddBtn');
+  const d = fbDetect();
+  const nSounded = fbState.filter(f => f >= 0).length;
+
+  if (!d) {
+    box.className = 'fb-detected none';
+    box.textContent = nSounded < 2 ? '코드를 눌러보세요 (2줄 이상)' : '코드를 인식하지 못했어요 — 구성음을 확인해보세요';
+    btn.disabled = true;
+    return;
+  }
+  box.className = 'fb-detected';
+  box.innerHTML = `감지된 코드: <strong>${chordDispName(d.root, d.suffix, d.bass)}</strong>`;
+  btn.disabled = false;
+}
+
+function fbAdd() {
+  const d = fbDetect();
+  if (!d) return;
+  progression.push(d);
+  renderProgArea();
+  fbClear();
 }
 
 // ════════════════════════════════════════════════════════
