@@ -167,7 +167,7 @@
 
 <div class="header">
   <h1>🎸 코드 진행 키 변환기</h1>
-  <p>코드를 선택해서 진행을 만들면 모든 키로 옮겼을 때 코드와 운지를 보여드려요</p>
+  <p>손으로 잡는 코드와 카포 위치를 입력하면, 키를 옮기는 방법을 운지·카포 기준으로 보여드려요</p>
 </div>
 
 <div class="input-panel">
@@ -227,10 +227,10 @@
     <span class="prog-empty" id="progEmpty">코드를 추가하면 여기에 표시됩니다. 드래그로 순서 변경 가능</span>
   </div>
 
-  <!-- 액션 행 -->
+  <!-- 액션 행 1: 현재 상태 -->
   <div class="action-row">
     <div class="field">
-      <label>원본 키</label>
+      <label>운지 기준 키 (카포 0)</label>
       <select class="key-sel" id="origKey">
         <option value="auto">자동 감지</option>
         <option value="C">C</option><option value="C#">C# / Db</option>
@@ -239,6 +239,52 @@
         <option value="F#">F# / Gb</option><option value="G">G</option>
         <option value="Ab">Ab / G#</option><option value="A">A</option>
         <option value="Bb">Bb / A#</option><option value="B">B</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>현재 카포</label>
+      <select id="capoSel" style="min-width:90px">
+        <option value="0">없음 (0)</option>
+        <option value="1">1 카포</option><option value="2">2 카포</option>
+        <option value="3">3 카포</option><option value="4">4 카포</option>
+        <option value="5">5 카포</option><option value="6">6 카포</option>
+        <option value="7">7 카포</option><option value="8">8 카포</option>
+        <option value="9">9 카포</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- 액션 행 2: 변환 방법 -->
+  <div class="action-row">
+    <div class="field">
+      <label>변환 방법</label>
+      <select id="modeSel" style="min-width:150px" onchange="onModeChange()">
+        <option value="key">특정 키로 옮기기</option>
+        <option value="capo">카포 위치 조절</option>
+      </select>
+    </div>
+    <div class="field" id="targetKeyField">
+      <label>목표 키 (실제 음)</label>
+      <select class="key-sel" id="targetKey">
+        <option value="C">C</option><option value="C#">C# / Db</option>
+        <option value="D">D</option><option value="Eb">Eb / D#</option>
+        <option value="E">E</option><option value="F">F</option>
+        <option value="F#">F# / Gb</option><option value="G">G</option>
+        <option value="Ab">Ab / G#</option><option value="A">A</option>
+        <option value="Bb">Bb / A#</option><option value="B">B</option>
+      </select>
+    </div>
+    <div class="field" id="capoDeltaField" style="display:none">
+      <label>카포 이동</label>
+      <select id="capoDelta" style="min-width:100px">
+        <option value="1">+1 (반음↑)</option><option value="2">+2</option>
+        <option value="3">+3</option><option value="4">+4</option>
+        <option value="5">+5</option><option value="6">+6</option>
+        <option value="7">+7</option>
+        <option value="-1">-1 (반음↓)</option><option value="-2">-2</option>
+        <option value="-3">-3</option><option value="-4">-4</option>
+        <option value="-5">-5</option><option value="-6">-6</option>
+        <option value="-7">-7</option>
       </select>
     </div>
     <div class="spacer"></div>
@@ -597,8 +643,83 @@ function checkNote(si, fret, baseFret, noteName) {
 }
 
 // ════════════════════════════════════════════════════════
+//  MODE SWITCH (목표 키 / 카포 조절)
+// ════════════════════════════════════════════════════════
+function onModeChange() {
+  const mode = document.getElementById('modeSel').value;
+  document.getElementById('targetKeyField').style.display = mode === 'key' ? '' : 'none';
+  document.getElementById('capoDeltaField').style.display = mode === 'capo' ? '' : 'none';
+}
+
+// ════════════════════════════════════════════════════════
 //  MAIN RENDER
 // ════════════════════════════════════════════════════════
+
+// 결과 카드 1장 렌더링: 운지 코드진행 + 카포 + 키 정보 + 다이어그램
+function renderResultCard(opts) {
+  const { title, badge, chords, capo, cardKey, note } = opts;
+  const shapeKey = chords[0].root;                       // 운지 기준 키 (카포 안 낀 기준)
+  const soundKey = transposeRoot(shapeKey, capo);        // 실제 키 (카포 낀 기준)
+
+  let html = `<div class="diagram-panel open" style="margin-bottom:20px">
+    <div class="diagram-panel-header" style="margin-bottom:12px">
+      <strong>${title}</strong>${badge ? ` <span class="orig-badge">${badge}</span>` : ''}
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:14px;font-size:0.82rem">
+      <span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 12px">
+        🎸 카포: <strong style="color:var(--accent)">${capo === 0 ? '없음' : capo + '카포'}</strong></span>
+      <span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 12px">
+        ✋ 운지 기준 키 (카포 안 낀 기준): <strong style="color:var(--accent2)">${KEY_DISPLAY[shapeKey]||shapeKey}</strong></span>
+      <span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 12px">
+        🔊 실제 키 (카포 낀 기준): <strong style="color:var(--green)">${KEY_DISPLAY[soundKey]||soundKey}</strong></span>
+    </div>
+    ${note ? `<div style="text-align:center;font-size:0.78rem;color:var(--muted);margin-bottom:12px">${note}</div>` : ''}
+    <div style="text-align:center;font-size:1.05rem;margin-bottom:14px;color:var(--text)">
+      ${chords.map(c=>`<strong>${chordDispName(c.root,c.suffix,c.bass)}</strong>`).join('  <span style="color:var(--muted)">–</span>  ')}
+    </div>
+    <div class="diagrams-row">`;
+
+  for (const chord of chords) {
+    const result = getPositions(chord.root, chord.suffix, chord.bass);
+    const disp = SUFFIX_DISPLAY[chord.suffix]??chord.suffix;
+    const cid = safeId(cardKey, chord.root, chord.suffix, chord.bass);
+    const bEnc = chord.bass ? encodeURIComponent(chord.bass) : '';
+
+    html += `<div class="chord-card" id="${cid}">`;
+    if (chord.bass) {
+      html += `<div class="card-name">${chord.root}<span class="suf">${disp}</span><span style="color:var(--green);font-size:0.85rem">/${chord.bass}</span></div>`;
+    } else {
+      html += `<div class="card-name">${chord.root}<span class="suf">${disp}</span></div>`;
+    }
+    if (!result) {
+      html += `<div class="no-voicing">데이터 없음</div>`;
+    } else {
+      const { positions, fallback, synthesized } = result;
+      if (fallback) html += `<div style="font-size:0.65rem;color:#a06040;margin-bottom:4px">※ 분수코드 운지 없음 (근사)</div>`;
+      if (synthesized) html += `<div style="font-size:0.65rem;color:#6090c0;margin-bottom:4px">⚙ 자동 생성 운지</div>`;
+      html += renderDiagram(positions[0], chord.root, chord.bass);
+      if (positions.length>1) {
+        html += `<div class="pos-switch">`;
+        for (let p=0; p<Math.min(positions.length,6); p++) {
+          html += `<div class="pos-dot${p===0?' active':''}" onclick="switchPos(event,'${cid}','${chord.root}','${chord.suffix}','${bEnc}',${p})"></div>`;
+        }
+        html += `</div><div class="card-pos-label">포지션 ${positions.length}개</div>`;
+      }
+    }
+    html += `</div>`;
+  }
+  html += `</div></div>`;
+  return html;
+}
+
+function transposeChords(chords, semi) {
+  return chords.map(c => ({
+    root: transposeRoot(c.root, semi),
+    suffix: c.suffix,
+    bass: c.bass ? transposeRoot(c.bass, semi) : null,
+  }));
+}
+
 async function run() {
   if (progression.length === 0) {
     document.getElementById('results').innerHTML = `<div class="err">코드를 하나 이상 추가해주세요</div>`;
@@ -607,127 +728,86 @@ async function run() {
   const ok = await loadDB();
   if (!ok) return;
 
-  openRowIdx = -1;
+  const capo = parseInt(document.getElementById('capoSel').value, 10);
+  const mode = document.getElementById('modeSel').value;
 
+  // 운지 기준 키: 자동(첫 코드 루트) 또는 사용자 지정
   const origKeyInput = document.getElementById('origKey').value;
-  let origIdx = 0;
-  if (origKeyInput !== 'auto') {
-    const oKey = ROOT_NORM[origKeyInput] || origKeyInput;
-    const fIdx = DB_KEYS.indexOf(progression[0].root);
-    origIdx = ((DB_KEYS.indexOf(oKey) - fIdx) + 12) % 12;
-  }
+  let shapeKey = progression[0].root;
+  if (origKeyInput !== 'auto') shapeKey = ROOT_NORM[origKeyInput] || origKeyInput;
+  const soundKey = transposeRoot(shapeKey, capo);
 
-  const rows = Array.from({length:12}, (_,semi) => ({
-    semi,
-    chords: progression.map(c => ({
-      root: transposeRoot(c.root, semi),
-      suffix: c.suffix,
-      bass: c.bass ? transposeRoot(c.bass, semi) : null,
-    }))
-  }));
+  let html = '';
 
-  let html = `
-    <div class="prog-header">
-      원본 진행: <strong>${progression.map(c=>chordDispName(c.root,c.suffix,c.bass)).join('  –  ')}</strong>
-      <span style="color:var(--muted);font-size:0.8rem"> (행을 클릭하면 운지 확인)</span>
-    </div>
-    <div class="trans-table-wrap">
-    <table class="trans-table">
-    <thead><tr>
-      <th>키</th>
-      ${progression.map(c=>`<th>${chordDispName(c.root,c.suffix,c.bass)}</th>`).join('')}
-      <th></th>
-    </tr></thead><tbody>`;
+  // ── 원본 카드 ──
+  html += renderResultCard({
+    title: '현재 연주', badge: '원본',
+    chords: progression, capo, cardKey: 'orig',
+  });
 
-  for (let i=0; i<12; i++) {
-    const row = rows[i];
-    const isOrig = (i===origIdx);
-    const keyName = row.chords[0].root;
-    const sl = row.semi===0?'원본':(row.semi<=6?`+${row.semi}`:`-${12-row.semi}`);
-
-    html += `<tr class="${isOrig?'original-row':''}" onclick="toggleDiagram(${i})" id="row-${i}">`;
-    html += `<td class="key-cell">${KEY_DISPLAY[keyName]||keyName}${isOrig?'<span class="orig-badge">원본</span>':''}<span class="semi">${sl} 반음</span></td>`;
-    for (const chord of row.chords) {
-      const res = getPositions(chord.root, chord.suffix, chord.bass);
-      const disp = SUFFIX_DISPLAY[chord.suffix]??chord.suffix;
-      const slash = chord.bass?`<span style="color:var(--green);font-size:0.78rem">/${chord.bass}</span>`:'';
-      html += `<td class="chord-cell${res?'':' no-data'}">
-        <span class="root">${chord.root}</span><span class="suf">${disp}</span>${slash}
-        ${res?.fallback?'<span style="font-size:0.6rem;color:#a06040;display:block">운지 근사</span>':''}
-      </td>`;
-    }
-    html += `<td style="width:20px"><span class="expand-icon" id="icon-${i}">▶</span></td></tr>`;
-    html += `<tr id="diag-row-${i}" style="display:none"><td colspan="${progression.length+2}" style="padding:0">
-      <div class="diagram-panel open" id="diag-${i}"></div>
-    </td></tr>`;
-  }
-  html += `</tbody></table></div>`;
-  document.getElementById('results').innerHTML = html;
-}
-
-function toggleDiagram(rowIdx) {
-  const prev = openRowIdx;
-  if (prev>=0 && prev!==rowIdx) {
-    document.getElementById(`diag-row-${prev}`).style.display='none';
-    document.getElementById(`icon-${prev}`).textContent='▶';
-    document.getElementById(`row-${prev}`)?.classList.remove('active');
-  }
-  if (prev===rowIdx) {
-    document.getElementById(`diag-row-${rowIdx}`).style.display='none';
-    document.getElementById(`icon-${rowIdx}`).textContent='▶';
-    document.getElementById(`row-${rowIdx}`)?.classList.remove('active');
-    openRowIdx=-1; return;
-  }
-  openRowIdx=rowIdx;
-  document.getElementById(`icon-${rowIdx}`).textContent='▼';
-  document.getElementById(`row-${rowIdx}`)?.classList.add('active');
-
-  const panel = document.getElementById(`diag-${rowIdx}`);
-  const transposed = progression.map(c=>({
-    root: transposeRoot(c.root, rowIdx),
-    suffix: c.suffix,
-    bass: c.bass ? transposeRoot(c.bass, rowIdx) : null,
-  }));
-
-  const keyName = transposed[0].root;
-  let inner = `<div class="diagram-panel-header">
-    <strong>Key of ${KEY_DISPLAY[keyName]||keyName}</strong>
-    — ${transposed.map(c=>chordDispName(c.root,c.suffix,c.bass)).join('  –  ')}
-  </div><div class="diagrams-row">`;
-
-  for (const chord of transposed) {
-    const result = getPositions(chord.root, chord.suffix, chord.bass);
-    const disp = SUFFIX_DISPLAY[chord.suffix]??chord.suffix;
-    const cid = safeId(rowIdx, chord.root, chord.suffix, chord.bass);
-    const bEnc = chord.bass ? encodeURIComponent(chord.bass) : '';
-
-    inner += `<div class="chord-card" id="${cid}">`;
-    if (chord.bass) {
-      inner += `<div class="card-name">${chord.root}<span class="suf">${disp}</span><span style="color:var(--green);font-size:0.85rem">/${chord.bass}</span></div>`;
+  if (mode === 'capo') {
+    // ── 카포 이동: 운지 그대로, 카포만 이동 ──
+    const delta = parseInt(document.getElementById('capoDelta').value, 10);
+    const newCapo = capo + delta;
+    if (newCapo < 0 || newCapo > 11) {
+      html += `<div class="err">카포를 ${delta > 0 ? '+'+delta : delta} 이동하면 ${newCapo}프렛이 되어 연주할 수 없어요 (0~11 범위)</div>`;
     } else {
-      inner += `<div class="card-name">${chord.root}<span class="suf">${disp}</span></div>`;
+      html += `<div style="text-align:center;font-size:1.4rem;color:var(--muted);margin:4px 0 16px">⬇ 카포 ${delta>0?'+'+delta:delta} 이동 (운지 그대로)</div>`;
+      html += renderResultCard({
+        title: '변환 결과', badge: '카포 이동',
+        chords: progression, capo: newCapo, cardKey: 'capoMove',
+        note: `운지는 그대로, 카포만 ${capo} → ${newCapo}. 실제 키가 ${KEY_DISPLAY[soundKey]||soundKey} → ${KEY_DISPLAY[transposeRoot(soundKey,delta)]||transposeRoot(soundKey,delta)}로 바뀝니다.`,
+      });
     }
-    if (!result) {
-      inner += `<div class="no-voicing">데이터 없음</div>`;
+  } else {
+    // ── 특정 키로: 두 가지 방법 모두 제시 ──
+    const targetRaw = document.getElementById('targetKey').value;
+    const targetKey = ROOT_NORM[targetRaw] || targetRaw;
+    const delta = (DB_KEYS.indexOf(targetKey) - DB_KEYS.indexOf(soundKey) + 12) % 12;
+
+    if (delta === 0) {
+      html += `<div class="err">이미 실제 키가 ${KEY_DISPLAY[targetKey]||targetKey}예요. 다른 키를 선택해주세요.</div>`;
     } else {
-      const { positions, fallback, synthesized } = result;
-      if (fallback) inner += `<div style="font-size:0.65rem;color:#a06040;margin-bottom:4px">※ 분수코드 운지 없음 (근사)</div>`;
-      if (synthesized) inner += `<div style="font-size:0.65rem;color:#6090c0;margin-bottom:4px">⚙ 자동 생성 운지</div>`;
-      inner += renderDiagram(positions[0], chord.root, chord.bass);
-      if (positions.length>1) {
-        inner += `<div class="pos-switch">`;
-        for (let p=0; p<Math.min(positions.length,6); p++) {
-          inner += `<div class="pos-dot${p===0?' active':''}" onclick="switchPos(event,'${cid}','${chord.root}','${chord.suffix}','${bEnc}',${p})"></div>`;
-        }
-        inner += `</div><div class="card-pos-label">포지션 ${positions.length}개</div>`;
+      html += `<div style="text-align:center;font-size:1.4rem;color:var(--muted);margin:4px 0 16px">⬇ 실제 키 ${KEY_DISPLAY[soundKey]||soundKey} → ${KEY_DISPLAY[targetKey]||targetKey} (+${delta} 반음)</div>`;
+
+      // 방법 1: 운지 유지 + 카포 이동
+      const capoUp = capo + delta;          // 카포만 올리기
+      const capoDown = capo + delta - 12;   // 카포 내리기 (음수면 불가)
+      let capoOption = null;
+      if (capoUp >= 0 && capoUp <= 11) capoOption = capoUp;
+      else if (capoDown >= 0 && capoDown <= 11) capoOption = capoDown;
+
+      if (capoOption !== null) {
+        html += renderResultCard({
+          title: '방법 ① 운지 그대로 + 카포 이동', badge: '추천',
+          chords: progression, capo: capoOption, cardKey: 'm1',
+          note: `손 모양은 그대로 두고 카포를 ${capo} → ${capoOption}으로 옮기면 실제 키가 ${KEY_DISPLAY[targetKey]||targetKey}가 됩니다.`,
+        });
+      } else {
+        html += `<div style="text-align:center;font-size:0.85rem;color:var(--muted);margin-bottom:16px">방법 ① (운지 유지 + 카포 이동)은 카포 범위를 벗어나 불가능해요.</div>`;
+      }
+
+      // 방법 2: 카포 유지 + 운지 변경
+      const newChords = transposeChords(progression, delta);
+      html += renderResultCard({
+        title: '방법 ② 카포 그대로 + 운지 변경',
+        chords: newChords, capo, cardKey: 'm2',
+        note: `카포는 ${capo === 0 ? '없이' : capo + '프렛에'} 그대로 두고, 코드를 ${delta}반음 올려 잡으면 실제 키가 ${KEY_DISPLAY[targetKey]||targetKey}가 됩니다.`,
+      });
+
+      // 방법 3: 카포 없이 (카포를 끼고 있었을 때만)
+      if (capo !== 0) {
+        const noCapoChords = transposeChords(progression, (capo + delta) % 12);
+        html += renderResultCard({
+          title: '방법 ③ 카포 없이 연주',
+          chords: noCapoChords, capo: 0, cardKey: 'm3',
+          note: `카포를 빼고, 실제 음 그대로 코드를 잡는 방법입니다.`,
+        });
       }
     }
-    inner += `</div>`;
   }
-  inner += `</div>`;
-  panel.innerHTML = inner;
-  document.getElementById(`diag-row-${rowIdx}`).style.display='table-row';
-  setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+
+  document.getElementById('results').innerHTML = html;
 }
 
 function switchPos(e, cid, root, suffix, bEnc, posIdx) {
