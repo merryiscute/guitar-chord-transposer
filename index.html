@@ -222,6 +222,27 @@
     <button class="btn-outline" onclick="clearAll()">전체 삭제</button>
   </div>
 
+  <!-- 튜닝 설정 -->
+  <div class="builder-row" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+    <div class="field">
+      <label>튜닝 프리셋</label>
+      <select id="tuningPreset" style="min-width:170px" onchange="applyTuningPreset()">
+        <option value="EADGBE">스탠다드 (EADGBE)</option>
+        <option value="DADGBE">드랍 D (DADGBE)</option>
+        <option value="DADGAD">DADGAD</option>
+        <option value="CGDGAD">CGDGAD</option>
+        <option value="CGEbFBbEb">CGD#FA#D#</option>
+        <option value="custom">커스텀</option>
+      </select>
+    </div>
+    <div class="field"><label>6번줄</label><select id="tun0" class="tun-sel" style="min-width:64px" onchange="onTuningStringChange()"></select></div>
+    <div class="field"><label>5번줄</label><select id="tun1" class="tun-sel" style="min-width:64px" onchange="onTuningStringChange()"></select></div>
+    <div class="field"><label>4번줄</label><select id="tun2" class="tun-sel" style="min-width:64px" onchange="onTuningStringChange()"></select></div>
+    <div class="field"><label>3번줄</label><select id="tun3" class="tun-sel" style="min-width:64px" onchange="onTuningStringChange()"></select></div>
+    <div class="field"><label>2번줄</label><select id="tun4" class="tun-sel" style="min-width:64px" onchange="onTuningStringChange()"></select></div>
+    <div class="field"><label>1번줄</label><select id="tun5" class="tun-sel" style="min-width:64px" onchange="onTuningStringChange()"></select></div>
+  </div>
+
   <!-- 코드 진행 태그 영역 -->
   <div class="prog-area" id="progArea">
     <span class="prog-empty" id="progEmpty">코드를 추가하면 여기에 표시됩니다. 드래그로 순서 변경 가능</span>
@@ -329,6 +350,45 @@ const SUFFIX_DISPLAY = {
   'maj9':'maj9','m9':'m9','add9':'add9','11':'11','13':'13','m7b5':'m7b5',
   'mmaj7':'mmaj7','7sus4':'7sus4'
 };
+
+// ════════════════════════════════════════════════════════
+//  TUNING (변칙 튜닝)
+// ════════════════════════════════════════════════════════
+const TUNING_PRESETS = {
+  'EADGBE':    ['E','A','D','G','B','E'],
+  'DADGBE':    ['D','A','D','G','B','E'],
+  'DADGAD':    ['D','A','D','G','A','D'],
+  'CGDGAD':    ['C','G','D','G','A','D'],
+  'CGEbFBbEb': ['C','G','Eb','F','Bb','Eb'],
+};
+const STANDARD_TUNING = TUNING_PRESETS['EADGBE'];
+let TUNING = [...STANDARD_TUNING]; // 6번줄→1번줄
+
+function notePitch(n) { return DB_KEYS.indexOf(n); }
+function openPitches() { return TUNING.map(notePitch); }
+function isStandardTuning() { return TUNING.every((n,i)=>n===STANDARD_TUNING[i]); }
+
+function initTuningSelects() {
+  for (let i = 0; i < 6; i++) {
+    const sel = document.getElementById('tun' + i);
+    sel.innerHTML = DB_KEYS.map(k=>`<option value="${k}">${KEY_DISPLAY[k]||k}</option>`).join('');
+    sel.value = TUNING[i];
+  }
+}
+function applyTuningPreset() {
+  const p = document.getElementById('tuningPreset').value;
+  if (p === 'custom') return;
+  TUNING = [...TUNING_PRESETS[p]];
+  for (let i = 0; i < 6; i++) document.getElementById('tun' + i).value = TUNING[i];
+  if (progression.length) run();
+}
+function onTuningStringChange() {
+  TUNING = Array.from({length:6}, (_,i)=>document.getElementById('tun'+i).value);
+  // 프리셋과 일치하면 그 프리셋으로, 아니면 커스텀 표시
+  const match = Object.entries(TUNING_PRESETS).find(([,t])=>t.every((n,i)=>n===TUNING[i]));
+  document.getElementById('tuningPreset').value = match ? match[0] : 'custom';
+  if (progression.length) run();
+}
 
 // ════════════════════════════════════════════════════════
 //  STATE
@@ -493,10 +553,90 @@ function buildSlashSuffix(suffix, bass) {
   return null;
 }
 
-// ── 분수코드 운지 자동 합성 ──
+// ════════════════════════════════════════════════════════
+//  VOICING GENERATOR (변칙 튜닝용 운지 계산)
+// ════════════════════════════════════════════════════════
+// 코드 타입별 구성음 (루트 기준 반음)
+const CHORD_FORMULAS = {
+  'major':[0,4,7], 'minor':[0,3,7], '7':[0,4,7,10], 'maj7':[0,4,7,11],
+  'm7':[0,3,7,10], 'sus2':[0,2,7], 'sus4':[0,5,7], 'dim':[0,3,6],
+  'dim7':[0,3,6,9], 'aug':[0,4,8], '5':[0,7], '6':[0,4,7,9], 'm6':[0,3,7,9],
+  '9':[0,2,4,7,10], 'maj9':[0,2,4,7,11], 'm9':[0,2,3,7,10], 'add9':[0,2,4,7],
+  '11':[0,4,5,7,10], '13':[0,4,7,9,10], 'm7b5':[0,3,6,10], 'mmaj7':[0,3,7,11],
+  '7sus4':[0,5,7,10],
+};
+
+function generateVoicings(root, suffix, bass) {
+  const formula = CHORD_FORMULAS[suffix] || CHORD_FORMULAS['major'];
+  const rootP = notePitch(root);
+  const chordTones = new Set(formula.map(i => (rootP + i) % 12));
+  // 완전5도(7)는 4구성음 이상이면 생략 가능
+  const optional = new Set(formula.length >= 4 && formula.includes(7) ? [(rootP + 7) % 12] : []);
+  const required = [...chordTones].filter(t => !optional.has(t));
+  const bassP = bass ? notePitch(bass) : rootP;
+  if (bass) chordTones.add(bassP); // 분수코드 베이스음도 허용음에 포함
+  const open = openPitches();
+
+  const found = [];
+  const seen = new Set();
+
+  for (let base = 1; base <= 9; base++) {
+    // 각 줄 선택지: 뮤트(-1), 개방(0), base ~ base+3 프렛
+    const opts = [];
+    for (let s = 0; s < 6; s++) {
+      const o = [-1, 0];
+      for (let f = base; f <= base + 3; f++) o.push(f);
+      // 코드 구성음이 나오는 프렛만 남김 (뮤트는 항상 허용)
+      opts.push(o.filter(f => f === -1 || chordTones.has((open[s] + f) % 12)));
+    }
+    // 백트래킹
+    const frets = new Array(6).fill(-1);
+    (function dfs(s) {
+      if (s === 6) {
+        const sounded = [];
+        for (let i = 0; i < 6; i++) if (frets[i] >= 0) sounded.push(i);
+        if (sounded.length < 3) return;
+        // 베이스(가장 낮은 줄)가 지정음인지
+        const lowest = sounded[0];
+        if ((open[lowest] + frets[lowest]) % 12 !== bassP) return;
+        // 필수 구성음 전부 포함?
+        const pcs = new Set(sounded.map(i => (open[i] + frets[i]) % 12));
+        for (const r of required) if (!pcs.has(r)) return;
+        // 중간에 뮤트 없는 게 좋음 (베이스 위쪽 내부 뮤트 감점)
+        let innerMute = 0;
+        for (let i = sounded[0] + 1; i < sounded[sounded.length - 1]; i++) if (frets[i] === -1) innerMute++;
+        const key = frets.join(',');
+        if (seen.has(key)) return;
+        seen.add(key);
+        const nOpen = sounded.filter(i => frets[i] === 0).length;
+        const nFretted = sounded.filter(i => frets[i] > 0).length;
+        // 실제 사용된 최고 프렛 기준으로 낮은 포지션 선호
+        const maxFret = Math.max(0, ...frets.filter(f => f > 0));
+        const score = sounded.length * 2 + nOpen * 1.5 - maxFret * 0.7 - nFretted * 0.3 - innerMute * 2.5;
+        found.push({ frets: [...frets], score });
+      } else {
+        for (const f of opts[s]) { frets[s] = f; dfs(s + 1); }
+      }
+    })(0);
+  }
+
+  found.sort((a, b) => b.score - a.score);
+  // 다이어그램 좌표로 변환 (baseFret 보정)
+  return found.slice(0, 6).map(v => {
+    const fretted = v.frets.filter(f => f > 0);
+    const maxF = fretted.length ? Math.max(...fretted) : 0;
+    let baseFret = 1;
+    if (maxF > 5) {
+      baseFret = Math.min(...fretted);
+      v.frets = v.frets.map(f => f > 0 ? f - baseFret + 1 : f);
+    }
+    return { frets: v.frets, fingers: null, baseFret, barres: [] };
+  });
+}
+
+// ── 분수코드 운지 자동 합성 (표준 튜닝 DB용) ──
 // 일반 코드 포지션에서 6번줄/5번줄에 베이스음을 배치하고
 // 그보다 낮은 줄은 뮤트해서 분수코드 운지를 만든다.
-const OPEN_PITCH = [4, 9, 2, 7, 11, 4]; // E A D G B e (C 기준 반음)
 
 function synthesizeSlash(pos, bass) {
   const bassPitch = DB_KEYS.indexOf(bass);
@@ -511,7 +651,7 @@ function synthesizeSlash(pos, bass) {
   for (const si of [0, 1]) {
     // 이 줄에서 베이스음이 나오는 가장 낮은 프렛 (0 = 개방현)
     for (let actualFret = 0; actualFret <= hi + 2; actualFret++) {
-      if ((OPEN_PITCH[si] + actualFret) % 12 !== bassPitch) continue;
+      if ((openPitches()[si] + actualFret) % 12 !== bassPitch) continue;
       // 운지 가능성: 개방현이거나 기존 운지 범위 ±2 프렛 이내
       if (actualFret !== 0 && (actualFret < lo - 2 || actualFret > hi + 2)) continue;
       // 전체 스팬이 4프렛(다이어그램 5칸)을 넘으면 불가
@@ -545,6 +685,11 @@ function synthesizeSlash(pos, bass) {
 }
 
 function getPositions(root, suffix, bass) {
+  // 변칙 튜닝: DB 대신 보이싱 생성기 사용
+  if (!isStandardTuning()) {
+    const gen = generateVoicings(root, suffix, bass);
+    return gen.length > 0 ? { positions: gen, isSlash: !!bass, generated: true } : null;
+  }
   if (bass) {
     const ss = buildSlashSuffix(suffix, bass);
     if (ss && DB?.[root]?.[ss]) return { positions: DB[root][ss], isSlash: true };
@@ -632,14 +777,18 @@ function renderDiagram(pos, rootNote, bassNote, size=1) {
         svg += `<text x="${x}" y="${cy+Math.round(3.5*size)}" font-size="${Math.round(8*size)}" fill="#fff" text-anchor="middle" font-weight="bold">${finger}</text>`;
     }
   }
+  // 줄별 튜닝 음 표시 (하단)
+  for (let s=0; s<nStr; s++) {
+    const x=LP+s*sS;
+    svg += `<text x="${x}" y="${H-2}" font-size="${Math.round(7.5*size)}" fill="#666" text-anchor="middle" font-family="monospace">${TUNING[s]}</text>`;
+  }
   svg += `</svg>`;
   return svg;
 }
 
 function checkNote(si, fret, baseFret, noteName) {
-  const op=[4,9,2,7,11,4];
   const actual=fret===0?0:(baseFret+fret-1);
-  return (op[si]+actual)%12===DB_KEYS.indexOf(noteName);
+  return (openPitches()[si]+actual)%12===DB_KEYS.indexOf(noteName);
 }
 
 // ════════════════════════════════════════════════════════
@@ -666,6 +815,8 @@ function renderResultCard(opts) {
       <strong>${title}</strong>${badge ? ` <span class="orig-badge">${badge}</span>` : ''}
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:14px;font-size:0.82rem">
+      ${!isStandardTuning() ? `<span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 12px">
+        🎼 튜닝: <strong style="color:#b090e0">${TUNING.join(' ')}</strong></span>` : ''}
       <span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 12px">
         🎸 카포: <strong style="color:var(--accent)">${capo === 0 ? '없음' : capo + '카포'}</strong></span>
       <span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 12px">
@@ -694,9 +845,10 @@ function renderResultCard(opts) {
     if (!result) {
       html += `<div class="no-voicing">데이터 없음</div>`;
     } else {
-      const { positions, fallback, synthesized } = result;
+      const { positions, fallback, synthesized, generated } = result;
       if (fallback) html += `<div style="font-size:0.65rem;color:#a06040;margin-bottom:4px">※ 분수코드 운지 없음 (근사)</div>`;
       if (synthesized) html += `<div style="font-size:0.65rem;color:#6090c0;margin-bottom:4px">⚙ 자동 생성 운지</div>`;
+      if (generated) html += `<div style="font-size:0.65rem;color:#9070c0;margin-bottom:4px">⚙ ${TUNING.join('')} 튜닝 계산 운지</div>`;
       html += renderDiagram(positions[0], chord.root, chord.bass);
       if (positions.length>1) {
         html += `<div class="pos-switch">`;
@@ -867,7 +1019,8 @@ function switchPos(e, cid, root, suffix, bEnc, posIdx) {
   card.querySelectorAll('.pos-dot').forEach((d,i)=>d.classList.toggle('active',i===posIdx));
 }
 
-// 초기 DB 로드
+// 초기화
+initTuningSelects();
 loadDB();
 </script>
 </body>
