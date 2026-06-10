@@ -9,97 +9,142 @@
   :root {
     --bg: #0d0d1a; --surface: #161628; --surface2: #1e1e35; --border: #2a2a45;
     --accent: #f0c040; --accent2: #4da6ff; --green: #4dcc88; --red: #ff5f5f;
-    --text: #e0e0f0; --muted: #7070a0;
+    --text: #e0e0f0; --muted: #7070a0; --purple: #b090e0;
   }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px 16px 60px; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px 16px 80px; }
 
   /* ── Header ── */
-  .header { text-align: center; margin-bottom: 28px; }
-  .header h1 { font-size: 1.7rem; color: var(--accent); letter-spacing: 1px; }
-  .header p { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
+  .header { text-align: center; margin-bottom: 32px; }
+  .header h1 { font-size: 1.8rem; color: var(--accent); letter-spacing: 1px; }
+  .header p { color: var(--muted); font-size: 0.9rem; margin-top: 8px; line-height: 1.5; }
 
-  /* ── Input Panel ── */
-  .input-panel { max-width: 820px; margin: 0 auto 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; }
+  /* ── Step Card ── */
+  .wizard { max-width: 760px; margin: 0 auto; }
+  .step-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 22px 24px; margin-bottom: 18px;
+    position: relative;
+  }
+  .step-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .step-num {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    background: var(--accent); color: #0d0d1a;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 1rem;
+  }
+  .step-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+  .step-desc { font-size: 0.83rem; color: var(--muted); margin: 0 0 16px 44px; line-height: 1.5; }
+  .step-body { margin-left: 44px; }
+  @media (max-width: 560px) {
+    .step-desc, .step-body { margin-left: 0; }
+  }
 
-  /* 드롭다운 빌더 */
-  .builder-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+  /* ── 공통 폼 ── */
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
   .field { display: flex; flex-direction: column; gap: 5px; }
-  .field label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .field label { font-size: 0.74rem; color: var(--muted); letter-spacing: 0.3px; }
   select {
     background: var(--surface2); border: 1.5px solid var(--border); color: var(--text);
-    padding: 9px 10px; border-radius: 8px; font-size: 0.95rem; outline: none;
+    padding: 10px 12px; border-radius: 9px; font-size: 1rem; outline: none;
     cursor: pointer; transition: border-color .2s; appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237070a0'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
+    background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;
   }
   select:focus { border-color: var(--accent); }
-  select.root-sel { min-width: 72px; }
-  select.type-sel { min-width: 110px; }
-  select.bass-sel { min-width: 88px; }
-  select.key-sel  { min-width: 110px; }
 
   .btn {
     background: var(--accent); color: #0d0d1a; border: none;
-    padding: 9px 18px; border-radius: 8px; font-size: 0.9rem;
-    font-weight: 700; cursor: pointer; transition: .15s; white-space: nowrap; height: 40px;
+    padding: 10px 20px; border-radius: 9px; font-size: 0.95rem;
+    font-weight: 700; cursor: pointer; transition: .15s; white-space: nowrap; height: 44px;
   }
   .btn:hover { background: #ffd060; transform: translateY(-1px); }
   .btn:active { transform: none; }
   .btn-outline {
     background: transparent; border: 1.5px solid var(--border); color: var(--muted);
-    padding: 9px 14px; border-radius: 8px; font-size: 0.88rem;
-    cursor: pointer; transition: .15s; height: 40px; white-space: nowrap;
+    padding: 10px 14px; border-radius: 9px; font-size: 0.88rem;
+    cursor: pointer; transition: .15s; height: 44px; white-space: nowrap;
   }
-  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-outline:hover { border-color: var(--red); color: var(--red); }
 
-  /* 코드 진행 태그 영역 */
+  /* ── 코드 진행 태그 ── */
   .prog-area {
-    margin-top: 16px; min-height: 52px;
+    margin-top: 14px; min-height: 56px;
     background: var(--surface2); border: 1.5px dashed var(--border);
-    border-radius: 10px; padding: 10px 12px;
+    border-radius: 12px; padding: 12px;
     display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
   }
-  .prog-empty { color: var(--muted); font-size: 0.82rem; padding: 4px 0; }
-
-  /* 코드 태그 */
+  .prog-empty { color: var(--muted); font-size: 0.85rem; padding: 4px; }
   .ctag {
     display: flex; align-items: center; gap: 5px;
     background: var(--surface); border: 1.5px solid var(--border);
-    border-radius: 8px; padding: 6px 10px;
-    font-size: 0.95rem; font-weight: 600; color: var(--text);
+    border-radius: 9px; padding: 8px 12px;
+    font-size: 1rem; font-weight: 600; color: var(--text);
     cursor: grab; user-select: none;
-    transition: border-color .15s, transform .12s;
-    position: relative;
+    transition: border-color .15s, transform .12s; position: relative;
   }
   .ctag:hover { border-color: var(--accent2); }
   .ctag.dragging { opacity: 0.4; transform: scale(0.95); }
   .ctag.drag-over { border-color: var(--accent); background: #1e1c30; }
-  .ctag .tsuf { font-size: 0.78rem; color: var(--muted); font-weight: 400; }
-  .ctag .tbass { font-size: 0.82rem; color: var(--green); }
+  .ctag .tsuf { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+  .ctag .tbass { font-size: 0.85rem; color: var(--green); }
   .ctag .tdel {
-    width: 16px; height: 16px; border-radius: 50%; background: #3a3a55;
-    color: #aaa; font-size: 0.7rem; cursor: pointer; display: flex;
+    width: 18px; height: 18px; border-radius: 50%; background: #3a3a55;
+    color: #aaa; font-size: 0.72rem; cursor: pointer; display: flex;
     align-items: center; justify-content: center; transition: background .15s;
-    margin-left: 2px; flex-shrink: 0;
+    margin-left: 3px; flex-shrink: 0;
   }
   .ctag .tdel:hover { background: var(--red); color: #fff; }
-  .ctag .tnum {
-    position: absolute; top: -7px; left: 4px;
-    font-size: 0.55rem; color: var(--muted); font-weight: 400;
-  }
+  .ctag .tnum { position: absolute; top: -8px; left: 5px; font-size: 0.58rem; color: var(--muted); }
 
-  /* 구분선 + 실행 버튼 행 */
-  .action-row { display: flex; gap: 8px; margin-top: 14px; align-items: center; flex-wrap: wrap; }
-  .action-row .spacer { flex: 1; }
-
-  /* 예시 */
-  .quick-row { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
-  .ql { font-size: 0.73rem; color: var(--muted); margin-right: 4px; }
+  /* ── 예시 칩 ── */
+  .quick-row { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .ql { font-size: 0.76rem; color: var(--muted); margin-right: 2px; }
   .chip {
     background: var(--surface2); border: 1px solid var(--border); color: #a0a0cc;
-    padding: 4px 11px; border-radius: 20px; font-size: 0.76rem; cursor: pointer; transition: .15s;
+    padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: .15s;
   }
   .chip:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── 모드 선택 카드 ── */
+  .mode-cards { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .mode-card {
+    flex: 1; min-width: 220px;
+    background: var(--surface2); border: 2px solid var(--border);
+    border-radius: 12px; padding: 16px; cursor: pointer; transition: .15s;
+  }
+  .mode-card:hover { border-color: #4a4a70; }
+  .mode-card.selected { border-color: var(--accent); background: #1e1c2e; }
+  .mode-card .mc-icon { font-size: 1.5rem; margin-bottom: 6px; }
+  .mode-card .mc-title { font-weight: 700; font-size: 0.98rem; margin-bottom: 4px; }
+  .mode-card.selected .mc-title { color: var(--accent); }
+  .mode-card .mc-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.45; }
+
+  /* ── 고급 설정 (튜닝) ── */
+  details.adv {
+    margin-top: 16px; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface2); overflow: hidden;
+  }
+  details.adv summary {
+    padding: 12px 16px; cursor: pointer; font-size: 0.85rem; color: var(--muted);
+    user-select: none; list-style: none; display: flex; align-items: center; gap: 8px;
+  }
+  details.adv summary::-webkit-details-marker { display: none; }
+  details.adv summary::before { content: '▸'; transition: transform .15s; }
+  details.adv[open] summary::before { transform: rotate(90deg); }
+  details.adv summary:hover { color: var(--text); }
+  details.adv .adv-body { padding: 4px 16px 16px; }
+  .tuning-note { font-size: 0.75rem; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+
+  /* ── 변환 버튼 ── */
+  .go-wrap { text-align: center; margin: 24px 0; }
+  .go-btn {
+    background: var(--accent); color: #0d0d1a; border: none;
+    padding: 15px 48px; border-radius: 12px; font-size: 1.15rem;
+    font-weight: 800; cursor: pointer; transition: .15s; letter-spacing: 0.5px;
+    box-shadow: 0 4px 20px rgba(240,192,64,0.25);
+  }
+  .go-btn:hover { background: #ffd060; transform: translateY(-2px); box-shadow: 0 6px 24px rgba(240,192,64,0.35); }
+  .go-btn:active { transform: none; }
 
   /* ── Loading ── */
   #loadingBar { text-align: center; padding: 40px; color: var(--muted); font-size: 0.9rem; display: none; }
@@ -112,35 +157,15 @@
 
   /* ── Results ── */
   #results { max-width: 960px; margin: 0 auto; }
-  .prog-header { text-align: center; margin-bottom: 18px; font-size: 0.9rem; color: var(--muted); }
-  .prog-header strong { color: var(--accent); font-size: 1.15rem; }
+  .orig-badge { display: inline-block; background: var(--accent); color: #0d0d1a; border-radius: 4px; font-size: 0.62rem; padding: 2px 6px; font-weight: 700; vertical-align: middle; margin-left: 4px; }
 
-  .trans-table-wrap { overflow-x: auto; margin-bottom: 28px; }
-  table.trans-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-  table.trans-table th {
-    background: var(--surface2); color: var(--muted); text-align: center;
-    padding: 9px 10px; border-bottom: 2px solid var(--border);
-    font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap;
-  }
-  table.trans-table td { text-align: center; padding: 8px 8px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .12s; white-space: nowrap; }
-  table.trans-table tr:hover td { background: var(--surface2); }
-  table.trans-table tr.active td { background: #1e1c30; }
-  .key-cell { font-weight: 700; font-size: 0.92rem; min-width: 64px; color: var(--text); }
-  .key-cell .semi { font-size: 0.68rem; color: var(--muted); display: block; }
-  .chord-cell { font-size: 0.95rem; min-width: 72px; }
-  .chord-cell .root { color: var(--text); font-weight: 600; }
-  .chord-cell .suf { color: var(--muted); font-size: 0.82rem; }
-  .chord-cell.no-data .root { color: #554444; }
-  tr.original-row td { background: #1a1828 !important; }
-  tr.original-row .key-cell { color: var(--accent); }
-  .orig-badge { display: inline-block; background: var(--accent); color: #0d0d1a; border-radius: 3px; font-size: 0.6rem; padding: 1px 5px; font-weight: 700; vertical-align: middle; margin-left: 4px; }
-  .expand-icon { color: var(--muted); font-size: 0.7rem; margin-left: 4px; }
-
-  .diagram-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 28px; display: none; }
-  .diagram-panel.open { display: block; }
-  .diagram-panel-header { text-align: center; margin-bottom: 16px; font-size: 0.85rem; color: var(--muted); }
-  .diagram-panel-header strong { color: var(--accent2); font-size: 1.1rem; }
+  .diagram-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-bottom: 20px; }
+  .diagram-panel-header { text-align: center; margin-bottom: 14px; font-size: 0.88rem; color: var(--muted); }
+  .diagram-panel-header strong { color: var(--accent2); font-size: 1.15rem; }
   .diagrams-row { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+
+  .info-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 14px; font-size: 0.82rem; }
+  .info-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 13px; }
 
   .chord-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 12px 10px; text-align: center; min-width: 130px; transition: border-color .2s; }
   .chord-card:hover { border-color: var(--accent2); }
@@ -151,179 +176,238 @@
   .no-voicing { color: #554455; font-size: 0.78rem; padding: 20px 0; }
 
   .pos-switch { display: flex; gap: 4px; justify-content: center; margin-top: 6px; }
-  .pos-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background .15s; }
+  .pos-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background .15s; }
   .pos-dot.active { background: var(--accent2); }
 
+  .arrow-down { text-align: center; font-size: 1.4rem; color: var(--muted); margin: 4px 0 16px; }
   .err { text-align: center; color: var(--red); padding: 16px; font-size: 0.9rem; }
 
+  /* 다이어그램 범례 */
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 8px; font-size: 0.72rem; color: var(--muted); }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .lg-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
   @media (max-width: 600px) {
-    table.trans-table { font-size: 0.78rem; }
     .chord-card { min-width: 110px; }
-    .builder-row { gap: 6px; }
+    .go-btn { width: 100%; }
   }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>🎸 코드 진행 키 변환기</h1>
-  <p>손으로 잡는 코드와 카포 위치를 입력하면, 키를 옮기는 방법을 운지·카포 기준으로 보여드려요</p>
+  <h1>🎸 기타 키 변환기</h1>
+  <p>지금 치고 있는 코드를 알려주시면,<br>원하는 키로 바꾸는 방법을 운지 그림과 함께 알려드려요</p>
 </div>
 
-<div class="input-panel">
+<div class="wizard">
 
-  <!-- 코드 선택 빌더 -->
-  <div class="builder-row">
-    <div class="field">
-      <label>루트음</label>
-      <select class="root-sel" id="selRoot">
-        <option>C</option><option>C#</option><option>D</option><option>Eb</option>
-        <option>E</option><option>F</option><option>F#</option><option>G</option>
-        <option>Ab</option><option>A</option><option>Bb</option><option>B</option>
-      </select>
+  <!-- ═══════ STEP 1: 코드 진행 입력 ═══════ -->
+  <div class="step-card">
+    <div class="step-head">
+      <div class="step-num">1</div>
+      <div class="step-title">어떤 코드를 연주하나요?</div>
     </div>
-    <div class="field">
-      <label>코드 타입</label>
-      <select class="type-sel" id="selType">
-        <option value="major">Major</option>
-        <option value="minor">minor</option>
-        <option value="7">7</option>
-        <option value="maj7">maj7</option>
-        <option value="m7">m7</option>
-        <option value="sus2">sus2</option>
-        <option value="sus4">sus4</option>
-        <option value="dim">dim</option>
-        <option value="dim7">dim7</option>
-        <option value="aug">aug</option>
-        <option value="6">6</option>
-        <option value="m6">m6</option>
-        <option value="9">9</option>
-        <option value="maj9">maj9</option>
-        <option value="m9">m9</option>
-        <option value="add9">add9</option>
-        <option value="11">11</option>
-        <option value="13">13</option>
-        <option value="m7b5">m7b5</option>
-        <option value="mmaj7">mmaj7</option>
-        <option value="7sus4">7sus4</option>
-        <option value="5">5 (Power)</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>베이스음 (분수)</label>
-      <select class="bass-sel" id="selBass">
-        <option value="">없음</option>
-        <option>C</option><option>C#</option><option>D</option><option>Eb</option>
-        <option>E</option><option>F</option><option>F#</option><option>G</option>
-        <option>Ab</option><option>A</option><option>Bb</option><option>B</option>
-      </select>
-    </div>
-    <button class="btn" onclick="addChord()">＋ 추가</button>
-    <button class="btn-outline" onclick="clearAll()">전체 삭제</button>
-  </div>
+    <p class="step-desc">
+      손으로 잡는 코드를 순서대로 추가해주세요. 악보나 코드표에 적힌 그대로 넣으면 됩니다.<br>
+      분수코드(예: G/B)는 "베이스음"까지 선택하면 돼요. 잘 모르겠으면 아래 <b>예시</b>를 눌러보세요!
+    </p>
+    <div class="step-body">
+      <div class="row">
+        <div class="field">
+          <label>코드 (루트음)</label>
+          <select id="selRoot" style="min-width:80px">
+            <option>C</option><option>C#</option><option>D</option><option>Eb</option>
+            <option>E</option><option>F</option><option>F#</option><option>G</option>
+            <option>Ab</option><option>A</option><option>Bb</option><option>B</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>종류</label>
+          <select id="selType" style="min-width:120px">
+            <option value="major">Major (밝은 소리)</option>
+            <option value="minor">minor (어두운 소리)</option>
+            <option value="7">7</option>
+            <option value="maj7">maj7</option>
+            <option value="m7">m7</option>
+            <option value="sus2">sus2</option>
+            <option value="sus4">sus4</option>
+            <option value="add9">add9</option>
+            <option value="6">6</option>
+            <option value="m6">m6</option>
+            <option value="9">9</option>
+            <option value="maj9">maj9</option>
+            <option value="m9">m9</option>
+            <option value="11">11</option>
+            <option value="13">13</option>
+            <option value="dim">dim</option>
+            <option value="dim7">dim7</option>
+            <option value="m7b5">m7b5</option>
+            <option value="aug">aug</option>
+            <option value="mmaj7">mmaj7</option>
+            <option value="7sus4">7sus4</option>
+            <option value="5">5 (파워코드)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>베이스음 (분수코드)</label>
+          <select id="selBass" style="min-width:95px">
+            <option value="">없음</option>
+            <option>C</option><option>C#</option><option>D</option><option>Eb</option>
+            <option>E</option><option>F</option><option>F#</option><option>G</option>
+            <option>Ab</option><option>A</option><option>Bb</option><option>B</option>
+          </select>
+        </div>
+        <button class="btn" onclick="addChord()">＋ 코드 추가</button>
+      </div>
 
-  <!-- 튜닝 설정 -->
-  <div class="builder-row" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-    <div class="field">
-      <label>튜닝 프리셋</label>
-      <select id="tuningPreset" style="min-width:170px" onchange="applyTuningPreset()">
-        <option value="EADGBE">스탠다드 (EADGBE)</option>
-        <option value="DADGBE">드랍 D (DADGBE)</option>
-        <option value="DADGAD">DADGAD</option>
-        <option value="CGDGAD">CGDGAD</option>
-        <option value="CGEbFBbEb">CGD#FA#D#</option>
-        <option value="custom">커스텀</option>
-      </select>
-    </div>
-    <div class="field"><label>6번줄</label><select id="tun0" class="tun-sel" style="min-width:64px" onchange="onTuningStringChange()"></select></div>
-    <div class="field"><label>5번줄</label><select id="tun1" class="tun-sel" style="min-width:64px" onchange="onTuningStringChange()"></select></div>
-    <div class="field"><label>4번줄</label><select id="tun2" class="tun-sel" style="min-width:64px" onchange="onTuningStringChange()"></select></div>
-    <div class="field"><label>3번줄</label><select id="tun3" class="tun-sel" style="min-width:64px" onchange="onTuningStringChange()"></select></div>
-    <div class="field"><label>2번줄</label><select id="tun4" class="tun-sel" style="min-width:64px" onchange="onTuningStringChange()"></select></div>
-    <div class="field"><label>1번줄</label><select id="tun5" class="tun-sel" style="min-width:64px" onchange="onTuningStringChange()"></select></div>
-  </div>
+      <div class="prog-area" id="progArea">
+        <span class="prog-empty" id="progEmpty">👆 위에서 코드를 추가하면 여기에 차례로 쌓여요 (드래그로 순서 변경, ✕로 삭제)</span>
+      </div>
 
-  <!-- 코드 진행 태그 영역 -->
-  <div class="prog-area" id="progArea">
-    <span class="prog-empty" id="progEmpty">코드를 추가하면 여기에 표시됩니다. 드래그로 순서 변경 가능</span>
-  </div>
+      <div class="quick-row">
+        <span class="ql">💡 예시로 시작하기:</span>
+        <span class="chip" onclick="loadPreset(['C','Am','F','G'])">C Am F G</span>
+        <span class="chip" onclick="loadPreset(['G','Em','C','D'])">G Em C D</span>
+        <span class="chip" onclick="loadPreset(['A','F#m','D','E'])">A F#m D E</span>
+        <span class="chip" onclick="loadPreset(['Cmaj7','Am7','Fmaj7','G7'])">Cmaj7 Am7 Fmaj7 G7</span>
+        <span class="chip" onclick="loadPreset(['C','G/B','Am','F'])">C G/B Am F</span>
+        <span class="chip" onclick="loadPreset(['Am','G','F','E7'])">Am G F E7</span>
+      </div>
 
-  <!-- 액션 행 1: 현재 상태 -->
-  <div class="action-row">
-    <div class="field">
-      <label>운지 기준 키 (카포 0)</label>
-      <select class="key-sel" id="origKey">
-        <option value="auto">자동 감지</option>
-        <option value="C">C</option><option value="C#">C# / Db</option>
-        <option value="D">D</option><option value="Eb">Eb / D#</option>
-        <option value="E">E</option><option value="F">F</option>
-        <option value="F#">F# / Gb</option><option value="G">G</option>
-        <option value="Ab">Ab / G#</option><option value="A">A</option>
-        <option value="Bb">Bb / A#</option><option value="B">B</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>현재 카포</label>
-      <select id="capoSel" style="min-width:90px">
-        <option value="0">없음 (0)</option>
-        <option value="1">1 카포</option><option value="2">2 카포</option>
-        <option value="3">3 카포</option><option value="4">4 카포</option>
-        <option value="5">5 카포</option><option value="6">6 카포</option>
-        <option value="7">7 카포</option><option value="8">8 카포</option>
-        <option value="9">9 카포</option>
-      </select>
+      <div style="margin-top:10px;text-align:right">
+        <button class="btn-outline" style="height:34px;padding:5px 12px;font-size:0.8rem" onclick="clearAll()">전체 삭제</button>
+      </div>
     </div>
   </div>
 
-  <!-- 액션 행 2: 변환 방법 -->
-  <div class="action-row">
-    <div class="field">
-      <label>변환 방법</label>
-      <select id="modeSel" style="min-width:150px" onchange="onModeChange()">
-        <option value="key">특정 키로 옮기기</option>
-        <option value="capo">카포 위치 조절</option>
-      </select>
+  <!-- ═══════ STEP 2: 현재 연주 상태 ═══════ -->
+  <div class="step-card">
+    <div class="step-head">
+      <div class="step-num">2</div>
+      <div class="step-title">지금 어떻게 연주하고 있나요?</div>
     </div>
-    <div class="field" id="targetKeyField">
-      <label>목표 키 (실제 음)</label>
-      <select class="key-sel" id="targetKey">
-        <option value="C">C</option><option value="C#">C# / Db</option>
-        <option value="D">D</option><option value="Eb">Eb / D#</option>
-        <option value="E">E</option><option value="F">F</option>
-        <option value="F#">F# / Gb</option><option value="G">G</option>
-        <option value="Ab">Ab / G#</option><option value="A">A</option>
-        <option value="Bb">Bb / A#</option><option value="B">B</option>
-      </select>
+    <p class="step-desc">
+      카포를 끼고 있다면 몇 번째 프렛인지 알려주세요. 카포가 없으면 그대로 두면 됩니다.<br>
+      키는 자동으로 알아내 드려요. (직접 아는 경우에만 선택하세요)
+    </p>
+    <div class="step-body">
+      <div class="row">
+        <div class="field">
+          <label>🎸 카포 위치</label>
+          <select id="capoSel" style="min-width:120px">
+            <option value="0">카포 없음</option>
+            <option value="1">1번 프렛</option><option value="2">2번 프렛</option>
+            <option value="3">3번 프렛</option><option value="4">4번 프렛</option>
+            <option value="5">5번 프렛</option><option value="6">6번 프렛</option>
+            <option value="7">7번 프렛</option><option value="8">8번 프렛</option>
+            <option value="9">9번 프렛</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>✋ 운지 기준 키 (몰라도 OK)</label>
+          <select id="origKey" style="min-width:130px">
+            <option value="auto">자동으로 찾기</option>
+            <option value="C">C</option><option value="C#">C# / Db</option>
+            <option value="D">D</option><option value="Eb">Eb / D#</option>
+            <option value="E">E</option><option value="F">F</option>
+            <option value="F#">F# / Gb</option><option value="G">G</option>
+            <option value="Ab">Ab / G#</option><option value="A">A</option>
+            <option value="Bb">Bb / A#</option><option value="B">B</option>
+          </select>
+        </div>
+      </div>
+
+      <details class="adv">
+        <summary>🎼 변칙 튜닝을 쓰고 있어요 (고급 설정)</summary>
+        <div class="adv-body">
+          <div class="row">
+            <div class="field">
+              <label>튜닝 프리셋</label>
+              <select id="tuningPreset" style="min-width:180px" onchange="applyTuningPreset()">
+                <option value="EADGBE">스탠다드 (EADGBE)</option>
+                <option value="DADGBE">드랍 D (DADGBE)</option>
+                <option value="DADGAD">DADGAD</option>
+                <option value="CGDGAD">CGDGAD</option>
+                <option value="CGEbFBbEb">CGD#FA#D#</option>
+                <option value="custom">커스텀 (직접 설정)</option>
+              </select>
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div class="field"><label>6번줄 (가장 굵은 줄)</label><select id="tun0" style="min-width:70px" onchange="onTuningStringChange()"></select></div>
+            <div class="field"><label>5번줄</label><select id="tun1" style="min-width:70px" onchange="onTuningStringChange()"></select></div>
+            <div class="field"><label>4번줄</label><select id="tun2" style="min-width:70px" onchange="onTuningStringChange()"></select></div>
+            <div class="field"><label>3번줄</label><select id="tun3" style="min-width:70px" onchange="onTuningStringChange()"></select></div>
+            <div class="field"><label>2번줄</label><select id="tun4" style="min-width:70px" onchange="onTuningStringChange()"></select></div>
+            <div class="field"><label>1번줄 (가장 얇은 줄)</label><select id="tun5" style="min-width:70px" onchange="onTuningStringChange()"></select></div>
+          </div>
+          <p class="tuning-note">
+            ※ 변칙 튜닝을 선택하면 운지를 자동으로 계산해서 보여드려요.<br>
+            ※ 일반 기타라면 건드리지 않아도 됩니다 (기본값: 스탠다드).
+          </p>
+        </div>
+      </details>
     </div>
-    <div class="field" id="capoDeltaField" style="display:none">
-      <label>카포 이동</label>
-      <select id="capoDelta" style="min-width:100px">
-        <option value="1">+1 (반음↑)</option><option value="2">+2</option>
-        <option value="3">+3</option><option value="4">+4</option>
-        <option value="5">+5</option><option value="6">+6</option>
-        <option value="7">+7</option>
-        <option value="-1">-1 (반음↓)</option><option value="-2">-2</option>
-        <option value="-3">-3</option><option value="-4">-4</option>
-        <option value="-5">-5</option><option value="-6">-6</option>
-        <option value="-7">-7</option>
-      </select>
-    </div>
-    <div class="spacer"></div>
-    <button class="btn" style="padding:9px 28px;font-size:1rem" onclick="run()">🎵 키 변환 보기</button>
   </div>
 
-  <!-- 예시 진행 -->
-  <div class="quick-row">
-    <span class="ql">예시:</span>
-    <span class="chip" onclick="loadPreset(['C','Am','F','G'])">C Am F G</span>
-    <span class="chip" onclick="loadPreset(['G','Em','C','D'])">G Em C D</span>
-    <span class="chip" onclick="loadPreset(['A','F#m','D','E'])">A F#m D E</span>
-    <span class="chip" onclick="loadPreset(['Dm','Am','Bb','C'])">Dm Am Bb C</span>
-    <span class="chip" onclick="loadPreset(['Cmaj7','Am7','Fmaj7','G7'])">Cmaj7 Am7 Fmaj7 G7</span>
-    <span class="chip" onclick="loadPreset(['C','G/B','Am','F'])">C G/B Am F</span>
-    <span class="chip" onclick="loadPreset(['D','A/C#','Bm','G'])">D A/C# Bm G</span>
-    <span class="chip" onclick="loadPreset(['Am','G','F','E7'])">Am G F E7</span>
+  <!-- ═══════ STEP 3: 변환 방법 선택 ═══════ -->
+  <div class="step-card">
+    <div class="step-head">
+      <div class="step-num">3</div>
+      <div class="step-title">어떻게 바꾸고 싶나요?</div>
+    </div>
+    <p class="step-desc">둘 중 하나를 골라주세요.</p>
+    <div class="step-body">
+      <div class="mode-cards">
+        <div class="mode-card selected" id="modeCardKey" onclick="selectMode('key')">
+          <div class="mc-icon">🎯</div>
+          <div class="mc-title">다른 키로 옮기고 싶어요</div>
+          <div class="mc-desc">예: "이 노래를 E키로 부르고 싶어요" — 목표 키만 고르면 가능한 방법을 전부 알려드려요.</div>
+        </div>
+        <div class="mode-card" id="modeCardCapo" onclick="selectMode('capo')">
+          <div class="mc-icon">🔼</div>
+          <div class="mc-title">카포만 옮기고 싶어요</div>
+          <div class="mc-desc">예: "카포를 2칸 올리면 무슨 키가 되지?" — 손 모양은 그대로, 카포만 이동했을 때 결과를 보여드려요.</div>
+        </div>
+      </div>
+
+      <div class="row" id="targetKeyField">
+        <div class="field">
+          <label>🎯 목표 키 (옮기고 싶은 실제 음 기준)</label>
+          <select id="targetKey" style="min-width:140px">
+            <option value="C">C</option><option value="C#">C# / Db</option>
+            <option value="D">D</option><option value="Eb">Eb / D#</option>
+            <option value="E">E</option><option value="F">F</option>
+            <option value="F#">F# / Gb</option><option value="G">G</option>
+            <option value="Ab">Ab / G#</option><option value="A">A</option>
+            <option value="Bb">Bb / A#</option><option value="B">B</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" id="capoDeltaField" style="display:none">
+        <div class="field">
+          <label>🔼 카포를 얼마나 옮길까요?</label>
+          <select id="capoDelta" style="min-width:160px">
+            <option value="1">+1칸 (반음 높게)</option><option value="2">+2칸 (한 음 높게)</option>
+            <option value="3">+3칸</option><option value="4">+4칸</option>
+            <option value="5">+5칸</option><option value="6">+6칸</option>
+            <option value="7">+7칸</option>
+            <option value="-1">-1칸 (반음 낮게)</option><option value="-2">-2칸 (한 음 낮게)</option>
+            <option value="-3">-3칸</option><option value="-4">-4칸</option>
+            <option value="-5">-5칸</option><option value="-6">-6칸</option>
+            <option value="-7">-7칸</option>
+          </select>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- ═══════ 변환 버튼 ═══════ -->
+  <div class="go-wrap">
+    <button class="go-btn" onclick="run()">🎵 변환 결과 보기</button>
+  </div>
+
 </div>
 
 <div id="loadingBar"><span class="spinner"></span>코드 데이터베이스 로딩 중...</div>
@@ -384,7 +468,6 @@ function applyTuningPreset() {
 }
 function onTuningStringChange() {
   TUNING = Array.from({length:6}, (_,i)=>document.getElementById('tun'+i).value);
-  // 프리셋과 일치하면 그 프리셋으로, 아니면 커스텀 표시
   const match = Object.entries(TUNING_PRESETS).find(([,t])=>t.every((n,i)=>n===TUNING[i]));
   document.getElementById('tuningPreset').value = match ? match[0] : 'custom';
   if (progression.length) run();
@@ -394,10 +477,17 @@ function onTuningStringChange() {
 //  STATE
 // ════════════════════════════════════════════════════════
 let DB = null;
-let openRowIdx = -1;
-// 진행 코드 리스트: [{root, suffix, bass, label}]
 let progression = [];
 let dragSrcIdx = null;
+let currentMode = 'key';
+
+function selectMode(m) {
+  currentMode = m;
+  document.getElementById('modeCardKey').classList.toggle('selected', m === 'key');
+  document.getElementById('modeCardCapo').classList.toggle('selected', m === 'capo');
+  document.getElementById('targetKeyField').style.display = m === 'key' ? '' : 'none';
+  document.getElementById('capoDeltaField').style.display = m === 'capo' ? '' : 'none';
+}
 
 // ════════════════════════════════════════════════════════
 //  DB LOADING
@@ -430,9 +520,7 @@ function addChord() {
   const bassRaw = document.getElementById('selBass').value;
   const bass   = bassRaw ? (ROOT_NORM[bassRaw] || bassRaw) : null;
   const normRoot = ROOT_NORM[root] || root;
-  const disp = SUFFIX_DISPLAY[suffix] ?? suffix;
-  const label = normRoot + disp + (bass ? `/${bass}` : '');
-  progression.push({ root: normRoot, suffix, bass, label });
+  progression.push({ root: normRoot, suffix, bass });
   renderProgArea();
 }
 
@@ -445,14 +533,12 @@ function clearAll() {
   progression = [];
   renderProgArea();
   document.getElementById('results').innerHTML = '';
-  openRowIdx = -1;
 }
 
 function renderProgArea() {
   const area = document.getElementById('progArea');
-  const empty = document.getElementById('progEmpty');
   if (progression.length === 0) {
-    area.innerHTML = '<span class="prog-empty" id="progEmpty">코드를 추가하면 여기에 표시됩니다. 드래그로 순서 변경 가능</span>';
+    area.innerHTML = '<span class="prog-empty" id="progEmpty">👆 위에서 코드를 추가하면 여기에 차례로 쌓여요 (드래그로 순서 변경, ✕로 삭제)</span>';
     return;
   }
   area.innerHTML = progression.map((c, i) => {
@@ -491,23 +577,18 @@ function onDragEnd(e) {
 }
 
 // ════════════════════════════════════════════════════════
-//  PRESET LOADER  (예시 클릭)
+//  PRESET LOADER (예시 클릭)
 // ════════════════════════════════════════════════════════
 function loadPreset(tokens) {
   progression = [];
   for (const t of tokens) {
     const parsed = parseChordText(t);
-    if (parsed) {
-      const disp = SUFFIX_DISPLAY[parsed.suffix] ?? parsed.suffix;
-      parsed.label = parsed.root + disp + (parsed.bass ? `/${parsed.bass}` : '');
-      progression.push(parsed);
-    }
+    if (parsed) progression.push(parsed);
   }
   renderProgArea();
   run();
 }
 
-// 텍스트 파싱 (예시 프리셋용)
 function parseChordText(token) {
   const SUFFIX_MAP = {
     '':'major','maj':'major','M':'major','m':'minor','min':'minor',
@@ -556,7 +637,6 @@ function buildSlashSuffix(suffix, bass) {
 // ════════════════════════════════════════════════════════
 //  VOICING GENERATOR (변칙 튜닝용 운지 계산)
 // ════════════════════════════════════════════════════════
-// 코드 타입별 구성음 (루트 기준 반음)
 const CHORD_FORMULAS = {
   'major':[0,4,7], 'minor':[0,3,7], '7':[0,4,7,10], 'maj7':[0,4,7,11],
   'm7':[0,3,7,10], 'sus2':[0,2,7], 'sus4':[0,5,7], 'dim':[0,3,6],
@@ -570,39 +650,32 @@ function generateVoicings(root, suffix, bass) {
   const formula = CHORD_FORMULAS[suffix] || CHORD_FORMULAS['major'];
   const rootP = notePitch(root);
   const chordTones = new Set(formula.map(i => (rootP + i) % 12));
-  // 완전5도(7)는 4구성음 이상이면 생략 가능
   const optional = new Set(formula.length >= 4 && formula.includes(7) ? [(rootP + 7) % 12] : []);
   const required = [...chordTones].filter(t => !optional.has(t));
   const bassP = bass ? notePitch(bass) : rootP;
-  if (bass) chordTones.add(bassP); // 분수코드 베이스음도 허용음에 포함
+  if (bass) chordTones.add(bassP);
   const open = openPitches();
 
   const found = [];
   const seen = new Set();
 
   for (let base = 1; base <= 9; base++) {
-    // 각 줄 선택지: 뮤트(-1), 개방(0), base ~ base+3 프렛
     const opts = [];
     for (let s = 0; s < 6; s++) {
       const o = [-1, 0];
       for (let f = base; f <= base + 3; f++) o.push(f);
-      // 코드 구성음이 나오는 프렛만 남김 (뮤트는 항상 허용)
       opts.push(o.filter(f => f === -1 || chordTones.has((open[s] + f) % 12)));
     }
-    // 백트래킹
     const frets = new Array(6).fill(-1);
     (function dfs(s) {
       if (s === 6) {
         const sounded = [];
         for (let i = 0; i < 6; i++) if (frets[i] >= 0) sounded.push(i);
         if (sounded.length < 3) return;
-        // 베이스(가장 낮은 줄)가 지정음인지
         const lowest = sounded[0];
         if ((open[lowest] + frets[lowest]) % 12 !== bassP) return;
-        // 필수 구성음 전부 포함?
         const pcs = new Set(sounded.map(i => (open[i] + frets[i]) % 12));
         for (const r of required) if (!pcs.has(r)) return;
-        // 중간에 뮤트 없는 게 좋음 (베이스 위쪽 내부 뮤트 감점)
         let innerMute = 0;
         for (let i = sounded[0] + 1; i < sounded[sounded.length - 1]; i++) if (frets[i] === -1) innerMute++;
         const key = frets.join(',');
@@ -610,7 +683,6 @@ function generateVoicings(root, suffix, bass) {
         seen.add(key);
         const nOpen = sounded.filter(i => frets[i] === 0).length;
         const nFretted = sounded.filter(i => frets[i] > 0).length;
-        // 실제 사용된 최고 프렛 기준으로 낮은 포지션 선호
         const maxFret = Math.max(0, ...frets.filter(f => f > 0));
         const score = sounded.length * 2 + nOpen * 1.5 - maxFret * 0.7 - nFretted * 0.3 - innerMute * 2.5;
         found.push({ frets: [...frets], score });
@@ -621,7 +693,6 @@ function generateVoicings(root, suffix, bass) {
   }
 
   found.sort((a, b) => b.score - a.score);
-  // 다이어그램 좌표로 변환 (baseFret 보정)
   return found.slice(0, 6).map(v => {
     const fretted = v.frets.filter(f => f > 0);
     const maxF = fretted.length ? Math.max(...fretted) : 0;
@@ -635,49 +706,35 @@ function generateVoicings(root, suffix, bass) {
 }
 
 // ── 분수코드 운지 자동 합성 (표준 튜닝 DB용) ──
-// 일반 코드 포지션에서 6번줄/5번줄에 베이스음을 배치하고
-// 그보다 낮은 줄은 뮤트해서 분수코드 운지를 만든다.
-
 function synthesizeSlash(pos, bass) {
   const bassPitch = DB_KEYS.indexOf(bass);
   const { frets, fingers, baseFret } = pos;
-
-  // 포지션의 운지 범위 (실제 프렛 번호)
   const fretted = frets.filter(f => f > 0).map(f => baseFret + f - 1);
   const lo = fretted.length ? Math.min(...fretted) : 1;
   const hi = fretted.length ? Math.max(...fretted) : 1;
 
-  // 베이스 줄 후보: 6번줄(idx 0) 우선, 다음 5번줄(idx 1)
   for (const si of [0, 1]) {
-    // 이 줄에서 베이스음이 나오는 가장 낮은 프렛 (0 = 개방현)
     for (let actualFret = 0; actualFret <= hi + 2; actualFret++) {
       if ((openPitches()[si] + actualFret) % 12 !== bassPitch) continue;
-      // 운지 가능성: 개방현이거나 기존 운지 범위 ±2 프렛 이내
       if (actualFret !== 0 && (actualFret < lo - 2 || actualFret > hi + 2)) continue;
-      // 전체 스팬이 4프렛(다이어그램 5칸)을 넘으면 불가
       if (actualFret !== 0) {
         const span = Math.max(hi, actualFret) - Math.min(lo, actualFret);
         if (span > 4) continue;
       }
-
       const newFrets = [...frets];
       const newFingers = fingers ? [...fingers] : null;
-      // 베이스 줄보다 낮은 줄은 뮤트
       for (let m = 0; m < si; m++) {
         newFrets[m] = -1;
         if (newFingers) newFingers[m] = 0;
       }
-      // 베이스음 배치 (baseFret 기준 상대 프렛으로 변환)
       const newBase = actualFret !== 0 && actualFret < baseFret ? actualFret : baseFret;
       if (newBase !== baseFret) {
-        // baseFret을 내려야 하면 모든 프렛 재계산
         const shift = baseFret - newBase;
         for (let i = 0; i < 6; i++) if (newFrets[i] > 0) newFrets[i] += shift;
       }
       newFrets[si] = actualFret === 0 ? 0 : actualFret - newBase + 1;
       if (newFrets[si] < 0 || newFrets[si] > 5) continue;
-      if (newFingers) newFingers[si] = 0; // 합성이라 손가락 번호 미지정
-
+      if (newFingers) newFingers[si] = 0;
       return { frets: newFrets, fingers: newFingers, baseFret: newBase, barres: pos.barres ?? [] };
     }
   }
@@ -685,7 +742,6 @@ function synthesizeSlash(pos, bass) {
 }
 
 function getPositions(root, suffix, bass) {
-  // 변칙 튜닝: DB 대신 보이싱 생성기 사용
   if (!isStandardTuning()) {
     const gen = generateVoicings(root, suffix, bass);
     return gen.length > 0 ? { positions: gen, isSlash: !!bass, generated: true } : null;
@@ -693,7 +749,6 @@ function getPositions(root, suffix, bass) {
   if (bass) {
     const ss = buildSlashSuffix(suffix, bass);
     if (ss && DB?.[root]?.[ss]) return { positions: DB[root][ss], isSlash: true };
-    // DB에 없으면 일반 코드 포지션에서 합성 시도
     const plain = DB?.[root]?.[suffix];
     if (!plain) return null;
     const synthesized = [];
@@ -777,7 +832,6 @@ function renderDiagram(pos, rootNote, bassNote, size=1) {
         svg += `<text x="${x}" y="${cy+Math.round(3.5*size)}" font-size="${Math.round(8*size)}" fill="#fff" text-anchor="middle" font-weight="bold">${finger}</text>`;
     }
   }
-  // 줄별 튜닝 음 표시 (하단)
   for (let s=0; s<nStr; s++) {
     const x=LP+s*sS;
     svg += `<text x="${x}" y="${H-2}" font-size="${Math.round(7.5*size)}" fill="#666" text-anchor="middle" font-family="monospace">${TUNING[s]}</text>`;
@@ -792,41 +846,69 @@ function checkNote(si, fret, baseFret, noteName) {
 }
 
 // ════════════════════════════════════════════════════════
-//  MODE SWITCH (목표 키 / 카포 조절)
+//  KEY DETECTION (다이어토닉 분석)
 // ════════════════════════════════════════════════════════
-function onModeChange() {
-  const mode = document.getElementById('modeSel').value;
-  document.getElementById('targetKeyField').style.display = mode === 'key' ? '' : 'none';
-  document.getElementById('capoDeltaField').style.display = mode === 'capo' ? '' : 'none';
+const MINORISH = new Set(['minor','m7','m9','m6','madd9','m11','mmaj7']);
+const DIMISH   = new Set(['dim','dim7','m7b5']);
+
+function chordQuality(suffix) {
+  if (MINORISH.has(suffix)) return 'min';
+  if (DIMISH.has(suffix)) return 'dim';
+  if (suffix === '7' || suffix === '9' || suffix === '13' || suffix === '11' || suffix === '7sus4') return 'dom';
+  return 'maj';
+}
+
+const DIATONIC = [
+  { iv: 0,  q: ['maj','dom'] },
+  { iv: 2,  q: ['min'] },
+  { iv: 4,  q: ['min'] },
+  { iv: 5,  q: ['maj'] },
+  { iv: 7,  q: ['maj','dom'] },
+  { iv: 9,  q: ['min'] },
+  { iv: 11, q: ['dim'] },
+];
+
+function detectKey(chords) {
+  let best = chords[0].root, bestScore = -1;
+  for (let k = 0; k < 12; k++) {
+    let score = 0;
+    for (let i = 0; i < chords.length; i++) {
+      const c = chords[i];
+      const iv = (DB_KEYS.indexOf(c.root) - k + 12) % 12;
+      const q = chordQuality(c.suffix);
+      const d = DIATONIC.find(d => d.iv === iv);
+      if (d && d.q.includes(q)) {
+        score += 2;
+        if (iv === 0 && (i === 0 || i === chords.length - 1)) score += 1;
+        if (iv === 7 && i === chords.length - 1) score += 0.5;
+      }
+    }
+    if (score > bestScore) { bestScore = score; best = DB_KEYS[k]; }
+  }
+  return best;
 }
 
 // ════════════════════════════════════════════════════════
 //  MAIN RENDER
 // ════════════════════════════════════════════════════════
-
-// 결과 카드 1장 렌더링: 운지 코드진행 + 카포 + 키 정보 + 다이어그램
 function renderResultCard(opts) {
   const { title, badge, chords, capo, cardKey, note } = opts;
-  const shapeKey = opts.shapeKey ?? chords[0].root;      // 운지 기준 키 (카포 안 낀 기준)
-  const soundKey = transposeRoot(shapeKey, capo);        // 실제 키 (카포 낀 기준)
+  const shapeKey = opts.shapeKey ?? chords[0].root;
+  const soundKey = transposeRoot(shapeKey, capo);
 
-  let html = `<div class="diagram-panel open" style="margin-bottom:20px">
+  let html = `<div class="diagram-panel">
     <div class="diagram-panel-header" style="margin-bottom:12px">
       <strong>${title}</strong>${badge ? ` <span class="orig-badge">${badge}</span>` : ''}
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:14px;font-size:0.82rem">
-      ${!isStandardTuning() ? `<span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 12px">
-        🎼 튜닝: <strong style="color:#b090e0">${TUNING.join(' ')}</strong></span>` : ''}
-      <span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 12px">
-        🎸 카포: <strong style="color:var(--accent)">${capo === 0 ? '없음' : capo + '카포'}</strong></span>
-      <span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 12px">
-        ✋ 운지 기준 키 (카포 안 낀 기준): <strong style="color:var(--accent2)">${KEY_DISPLAY[shapeKey]||shapeKey}</strong></span>
-      <span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 12px">
-        🔊 실제 키 (카포 낀 기준): <strong style="color:var(--green)">${KEY_DISPLAY[soundKey]||soundKey}</strong></span>
+    <div class="info-chips">
+      ${!isStandardTuning() ? `<span class="info-chip">🎼 튜닝: <strong style="color:var(--purple)">${TUNING.join(' ')}</strong></span>` : ''}
+      <span class="info-chip">🎸 카포: <strong style="color:var(--accent)">${capo === 0 ? '없음' : capo + '번 프렛'}</strong></span>
+      <span class="info-chip">✋ 운지 기준 키: <strong style="color:var(--accent2)">${KEY_DISPLAY[shapeKey]||shapeKey}</strong></span>
+      <span class="info-chip">🔊 실제 들리는 키: <strong style="color:var(--green)">${KEY_DISPLAY[soundKey]||soundKey}</strong></span>
     </div>
-    ${note ? `<div style="text-align:center;font-size:0.78rem;color:var(--muted);margin-bottom:12px">${note}</div>` : ''}
-    <div style="text-align:center;font-size:1.05rem;margin-bottom:14px;color:var(--text)">
-      ${chords.map(c=>`<strong>${chordDispName(c.root,c.suffix,c.bass)}</strong>`).join('  <span style="color:var(--muted)">–</span>  ')}
+    ${note ? `<div style="text-align:center;font-size:0.8rem;color:var(--muted);margin-bottom:12px;line-height:1.5">${note}</div>` : ''}
+    <div style="text-align:center;font-size:1.1rem;margin-bottom:14px;color:var(--text)">
+      ${chords.map(c=>`<strong>${chordDispName(c.root,c.suffix,c.bass)}</strong>`).join('  <span style="color:var(--muted)">→</span>  ')}
     </div>
     <div class="diagrams-row">`;
 
@@ -848,19 +930,27 @@ function renderResultCard(opts) {
       const { positions, fallback, synthesized, generated } = result;
       if (fallback) html += `<div style="font-size:0.65rem;color:#a06040;margin-bottom:4px">※ 분수코드 운지 없음 (근사)</div>`;
       if (synthesized) html += `<div style="font-size:0.65rem;color:#6090c0;margin-bottom:4px">⚙ 자동 생성 운지</div>`;
-      if (generated) html += `<div style="font-size:0.65rem;color:#9070c0;margin-bottom:4px">⚙ ${TUNING.join('')} 튜닝 계산 운지</div>`;
+      if (generated) html += `<div style="font-size:0.65rem;color:#9070c0;margin-bottom:4px">⚙ 변칙 튜닝 계산 운지</div>`;
       html += renderDiagram(positions[0], chord.root, chord.bass);
       if (positions.length>1) {
         html += `<div class="pos-switch">`;
         for (let p=0; p<Math.min(positions.length,6); p++) {
           html += `<div class="pos-dot${p===0?' active':''}" onclick="switchPos(event,'${cid}','${chord.root}','${chord.suffix}','${bEnc}',${p})"></div>`;
         }
-        html += `</div><div class="card-pos-label">포지션 ${positions.length}개</div>`;
+        html += `</div><div class="card-pos-label">다른 운지 ${positions.length}개 (점을 눌러보세요)</div>`;
       }
     }
     html += `</div>`;
   }
-  html += `</div></div>`;
+  html += `</div>
+    <div class="legend">
+      <span><span class="lg-dot" style="background:#f0c040"></span>루트음</span>
+      <span><span class="lg-dot" style="background:#4488dd"></span>구성음</span>
+      <span><span class="lg-dot" style="background:#50c878"></span>베이스음</span>
+      <span><span style="color:#cc4444;font-weight:bold">✕</span>안 치는 줄</span>
+      <span><span style="color:#50c878">○</span>개방현</span>
+    </div>
+  </div>`;
   return html;
 }
 
@@ -872,62 +962,18 @@ function transposeChords(chords, semi) {
   }));
 }
 
-// ════════════════════════════════════════════════════════
-//  KEY DETECTION (다이어토닉 분석)
-// ════════════════════════════════════════════════════════
-const MINORISH = new Set(['minor','m7','m9','m6','madd9','m11','mmaj7']);
-const DIMISH   = new Set(['dim','dim7','m7b5']);
-
-function chordQuality(suffix) {
-  if (MINORISH.has(suffix)) return 'min';
-  if (DIMISH.has(suffix)) return 'dim';
-  if (suffix === '7' || suffix === '9' || suffix === '13' || suffix === '11' || suffix === '7sus4') return 'dom';
-  return 'maj'; // major, maj7, sus, add9, 6, aug 등
-}
-
-// 장조 다이어토닉: 도수(반음) → 허용 퀄리티
-const DIATONIC = [
-  { iv: 0,  q: ['maj','dom'] },  // I
-  { iv: 2,  q: ['min'] },        // ii
-  { iv: 4,  q: ['min'] },        // iii
-  { iv: 5,  q: ['maj'] },        // IV
-  { iv: 7,  q: ['maj','dom'] },  // V
-  { iv: 9,  q: ['min'] },        // vi
-  { iv: 11, q: ['dim'] },        // vii°
-];
-
-function detectKey(chords) {
-  let best = chords[0].root, bestScore = -1;
-  for (let k = 0; k < 12; k++) {
-    let score = 0;
-    for (let i = 0; i < chords.length; i++) {
-      const c = chords[i];
-      const iv = (DB_KEYS.indexOf(c.root) - k + 12) % 12;
-      const q = chordQuality(c.suffix);
-      const d = DIATONIC.find(d => d.iv === iv);
-      if (d && d.q.includes(q)) {
-        score += 2;
-        if (iv === 0 && (i === 0 || i === chords.length - 1)) score += 1; // 토닉이 처음/끝
-        if (iv === 7 && i === chords.length - 1) score += 0.5;           // 도미넌트로 끝나면 약간 가산
-      }
-    }
-    if (score > bestScore) { bestScore = score; best = DB_KEYS[k]; }
-  }
-  return best;
-}
-
 async function run() {
   if (progression.length === 0) {
-    document.getElementById('results').innerHTML = `<div class="err">코드를 하나 이상 추가해주세요</div>`;
+    document.getElementById('results').innerHTML = `<div class="err">⚠️ 1단계에서 코드를 하나 이상 추가해주세요</div>`;
+    document.getElementById('results').scrollIntoView({behavior:'smooth'});
     return;
   }
   const ok = await loadDB();
   if (!ok) return;
 
   const capo = parseInt(document.getElementById('capoSel').value, 10);
-  const mode = document.getElementById('modeSel').value;
+  const mode = currentMode;
 
-  // 운지 기준 키: 자동(첫 코드 루트) 또는 사용자 지정
   const origKeyInput = document.getElementById('origKey').value;
   let shapeKey;
   if (origKeyInput !== 'auto') shapeKey = ROOT_NORM[origKeyInput] || origKeyInput;
@@ -936,75 +982,70 @@ async function run() {
 
   let html = '';
 
-  // ── 원본 카드 ──
   html += renderResultCard({
-    title: '현재 연주', badge: '원본',
+    title: '📍 지금 연주 중인 상태', badge: '원본',
     chords: progression, capo, cardKey: 'orig', shapeKey,
   });
 
   if (mode === 'capo') {
-    // ── 카포 이동: 운지 그대로, 카포만 이동 ──
     const delta = parseInt(document.getElementById('capoDelta').value, 10);
     const newCapo = capo + delta;
     if (newCapo < 0 || newCapo > 11) {
-      html += `<div class="err">카포를 ${delta > 0 ? '+'+delta : delta} 이동하면 ${newCapo}프렛이 되어 연주할 수 없어요 (0~11 범위)</div>`;
+      html += `<div class="err">카포를 ${delta > 0 ? '+'+delta : delta}칸 옮기면 ${newCapo}번 프렛이 되어 연주할 수 없어요 (0~11 범위)</div>`;
     } else {
-      html += `<div style="text-align:center;font-size:1.4rem;color:var(--muted);margin:4px 0 16px">⬇ 카포 ${delta>0?'+'+delta:delta} 이동 (운지 그대로)</div>`;
+      html += `<div class="arrow-down">⬇ 카포를 ${Math.abs(delta)}칸 ${delta>0?'올리면':'내리면'} (손 모양은 그대로)</div>`;
       html += renderResultCard({
-        title: '변환 결과', badge: '카포 이동',
+        title: '✅ 변환 결과', badge: '카포 이동',
         chords: progression, capo: newCapo, cardKey: 'capoMove', shapeKey,
-        note: `운지는 그대로, 카포만 ${capo} → ${newCapo}. 실제 키가 ${KEY_DISPLAY[soundKey]||soundKey} → ${KEY_DISPLAY[transposeRoot(soundKey,delta)]||transposeRoot(soundKey,delta)}로 바뀝니다.`,
+        note: `손 모양(운지)은 똑같이 치면 돼요. 카포만 ${capo === 0 ? '없음' : capo + '번'} → ${newCapo}번 프렛으로 옮기면, 실제 들리는 키가 ${KEY_DISPLAY[soundKey]||soundKey} → ${KEY_DISPLAY[transposeRoot(soundKey,delta)]||transposeRoot(soundKey,delta)}로 바뀝니다.`,
       });
     }
   } else {
-    // ── 특정 키로: 두 가지 방법 모두 제시 ──
     const targetRaw = document.getElementById('targetKey').value;
     const targetKey = ROOT_NORM[targetRaw] || targetRaw;
     const delta = (DB_KEYS.indexOf(targetKey) - DB_KEYS.indexOf(soundKey) + 12) % 12;
 
     if (delta === 0) {
-      html += `<div class="err">이미 실제 키가 ${KEY_DISPLAY[targetKey]||targetKey}예요. 다른 키를 선택해주세요.</div>`;
+      html += `<div class="err">지금 이미 ${KEY_DISPLAY[targetKey]||targetKey} 키로 연주하고 있어요! 다른 키를 선택해보세요.</div>`;
     } else {
-      html += `<div style="text-align:center;font-size:1.4rem;color:var(--muted);margin:4px 0 16px">⬇ 실제 키 ${KEY_DISPLAY[soundKey]||soundKey} → ${KEY_DISPLAY[targetKey]||targetKey} (+${delta} 반음)</div>`;
+      html += `<div class="arrow-down">⬇ 실제 키를 ${KEY_DISPLAY[soundKey]||soundKey} → ${KEY_DISPLAY[targetKey]||targetKey}로 바꾸는 방법 (${delta}반음 위로)</div>`;
 
-      // 방법 1: 운지 유지 + 카포 이동
-      const capoUp = capo + delta;          // 카포만 올리기
-      const capoDown = capo + delta - 12;   // 카포 내리기 (음수면 불가)
+      const capoUp = capo + delta;
+      const capoDown = capo + delta - 12;
       let capoOption = null;
       if (capoUp >= 0 && capoUp <= 11) capoOption = capoUp;
       else if (capoDown >= 0 && capoDown <= 11) capoOption = capoDown;
 
       if (capoOption !== null) {
         html += renderResultCard({
-          title: '방법 ① 운지 그대로 + 카포 이동', badge: '추천',
+          title: '방법 ① 손 모양은 그대로, 카포만 옮기기', badge: '가장 쉬움',
           chords: progression, capo: capoOption, cardKey: 'm1', shapeKey,
-          note: `손 모양은 그대로 두고 카포를 ${capo} → ${capoOption}으로 옮기면 실제 키가 ${KEY_DISPLAY[targetKey]||targetKey}가 됩니다.`,
+          note: `새로 외울 코드가 없어요! 카포를 ${capo === 0 ? '없음' : capo + '번'} → ${capoOption}번 프렛으로 옮기고 지금 그대로 치면 됩니다.`,
         });
       } else {
-        html += `<div style="text-align:center;font-size:0.85rem;color:var(--muted);margin-bottom:16px">방법 ① (운지 유지 + 카포 이동)은 카포 범위를 벗어나 불가능해요.</div>`;
+        html += `<div style="text-align:center;font-size:0.85rem;color:var(--muted);margin-bottom:16px">방법 ① (카포만 이동)은 카포 범위를 벗어나 쓸 수 없어요.</div>`;
       }
 
-      // 방법 2: 카포 유지 + 운지 변경
       const newChords = transposeChords(progression, delta);
       html += renderResultCard({
-        title: '방법 ② 카포 그대로 + 운지 변경',
+        title: '방법 ② 카포는 그대로, 코드를 바꿔 잡기',
         chords: newChords, capo, cardKey: 'm2', shapeKey: transposeRoot(shapeKey, delta),
-        note: `카포는 ${capo === 0 ? '없이' : capo + '프렛에'} 그대로 두고, 코드를 ${delta}반음 올려 잡으면 실제 키가 ${KEY_DISPLAY[targetKey]||targetKey}가 됩니다.`,
+        note: `카포는 ${capo === 0 ? '없이' : capo + '번 프렛에'} 그대로 두고, 아래의 새 코드로 바꿔 잡으면 됩니다.`,
       });
 
-      // 방법 3: 카포 없이 (카포를 끼고 있었을 때만)
       if (capo !== 0) {
         const noCapoChords = transposeChords(progression, (capo + delta) % 12);
         html += renderResultCard({
-          title: '방법 ③ 카포 없이 연주',
+          title: '방법 ③ 카포를 빼고 치기',
           chords: noCapoChords, capo: 0, cardKey: 'm3', shapeKey: transposeRoot(shapeKey, (capo + delta) % 12),
-          note: `카포를 빼고, 실제 음 그대로 코드를 잡는 방법입니다.`,
+          note: `카포 없이 아래 코드로 잡으면 같은 키가 됩니다.`,
         });
       }
     }
   }
 
   document.getElementById('results').innerHTML = html;
+  document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function switchPos(e, cid, root, suffix, bEnc, posIdx) {
