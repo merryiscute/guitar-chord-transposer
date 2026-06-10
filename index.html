@@ -658,7 +658,7 @@ function onModeChange() {
 // 결과 카드 1장 렌더링: 운지 코드진행 + 카포 + 키 정보 + 다이어그램
 function renderResultCard(opts) {
   const { title, badge, chords, capo, cardKey, note } = opts;
-  const shapeKey = chords[0].root;                       // 운지 기준 키 (카포 안 낀 기준)
+  const shapeKey = opts.shapeKey ?? chords[0].root;      // 운지 기준 키 (카포 안 낀 기준)
   const soundKey = transposeRoot(shapeKey, capo);        // 실제 키 (카포 낀 기준)
 
   let html = `<div class="diagram-panel open" style="margin-bottom:20px">
@@ -720,6 +720,50 @@ function transposeChords(chords, semi) {
   }));
 }
 
+// ════════════════════════════════════════════════════════
+//  KEY DETECTION (다이어토닉 분석)
+// ════════════════════════════════════════════════════════
+const MINORISH = new Set(['minor','m7','m9','m6','madd9','m11','mmaj7']);
+const DIMISH   = new Set(['dim','dim7','m7b5']);
+
+function chordQuality(suffix) {
+  if (MINORISH.has(suffix)) return 'min';
+  if (DIMISH.has(suffix)) return 'dim';
+  if (suffix === '7' || suffix === '9' || suffix === '13' || suffix === '11' || suffix === '7sus4') return 'dom';
+  return 'maj'; // major, maj7, sus, add9, 6, aug 등
+}
+
+// 장조 다이어토닉: 도수(반음) → 허용 퀄리티
+const DIATONIC = [
+  { iv: 0,  q: ['maj','dom'] },  // I
+  { iv: 2,  q: ['min'] },        // ii
+  { iv: 4,  q: ['min'] },        // iii
+  { iv: 5,  q: ['maj'] },        // IV
+  { iv: 7,  q: ['maj','dom'] },  // V
+  { iv: 9,  q: ['min'] },        // vi
+  { iv: 11, q: ['dim'] },        // vii°
+];
+
+function detectKey(chords) {
+  let best = chords[0].root, bestScore = -1;
+  for (let k = 0; k < 12; k++) {
+    let score = 0;
+    for (let i = 0; i < chords.length; i++) {
+      const c = chords[i];
+      const iv = (DB_KEYS.indexOf(c.root) - k + 12) % 12;
+      const q = chordQuality(c.suffix);
+      const d = DIATONIC.find(d => d.iv === iv);
+      if (d && d.q.includes(q)) {
+        score += 2;
+        if (iv === 0 && (i === 0 || i === chords.length - 1)) score += 1; // 토닉이 처음/끝
+        if (iv === 7 && i === chords.length - 1) score += 0.5;           // 도미넌트로 끝나면 약간 가산
+      }
+    }
+    if (score > bestScore) { bestScore = score; best = DB_KEYS[k]; }
+  }
+  return best;
+}
+
 async function run() {
   if (progression.length === 0) {
     document.getElementById('results').innerHTML = `<div class="err">코드를 하나 이상 추가해주세요</div>`;
@@ -733,8 +777,9 @@ async function run() {
 
   // 운지 기준 키: 자동(첫 코드 루트) 또는 사용자 지정
   const origKeyInput = document.getElementById('origKey').value;
-  let shapeKey = progression[0].root;
+  let shapeKey;
   if (origKeyInput !== 'auto') shapeKey = ROOT_NORM[origKeyInput] || origKeyInput;
+  else shapeKey = detectKey(progression);
   const soundKey = transposeRoot(shapeKey, capo);
 
   let html = '';
@@ -742,7 +787,7 @@ async function run() {
   // ── 원본 카드 ──
   html += renderResultCard({
     title: '현재 연주', badge: '원본',
-    chords: progression, capo, cardKey: 'orig',
+    chords: progression, capo, cardKey: 'orig', shapeKey,
   });
 
   if (mode === 'capo') {
@@ -755,7 +800,7 @@ async function run() {
       html += `<div style="text-align:center;font-size:1.4rem;color:var(--muted);margin:4px 0 16px">⬇ 카포 ${delta>0?'+'+delta:delta} 이동 (운지 그대로)</div>`;
       html += renderResultCard({
         title: '변환 결과', badge: '카포 이동',
-        chords: progression, capo: newCapo, cardKey: 'capoMove',
+        chords: progression, capo: newCapo, cardKey: 'capoMove', shapeKey,
         note: `운지는 그대로, 카포만 ${capo} → ${newCapo}. 실제 키가 ${KEY_DISPLAY[soundKey]||soundKey} → ${KEY_DISPLAY[transposeRoot(soundKey,delta)]||transposeRoot(soundKey,delta)}로 바뀝니다.`,
       });
     }
@@ -780,7 +825,7 @@ async function run() {
       if (capoOption !== null) {
         html += renderResultCard({
           title: '방법 ① 운지 그대로 + 카포 이동', badge: '추천',
-          chords: progression, capo: capoOption, cardKey: 'm1',
+          chords: progression, capo: capoOption, cardKey: 'm1', shapeKey,
           note: `손 모양은 그대로 두고 카포를 ${capo} → ${capoOption}으로 옮기면 실제 키가 ${KEY_DISPLAY[targetKey]||targetKey}가 됩니다.`,
         });
       } else {
@@ -791,7 +836,7 @@ async function run() {
       const newChords = transposeChords(progression, delta);
       html += renderResultCard({
         title: '방법 ② 카포 그대로 + 운지 변경',
-        chords: newChords, capo, cardKey: 'm2',
+        chords: newChords, capo, cardKey: 'm2', shapeKey: transposeRoot(shapeKey, delta),
         note: `카포는 ${capo === 0 ? '없이' : capo + '프렛에'} 그대로 두고, 코드를 ${delta}반음 올려 잡으면 실제 키가 ${KEY_DISPLAY[targetKey]||targetKey}가 됩니다.`,
       });
 
@@ -800,7 +845,7 @@ async function run() {
         const noCapoChords = transposeChords(progression, (capo + delta) % 12);
         html += renderResultCard({
           title: '방법 ③ 카포 없이 연주',
-          chords: noCapoChords, capo: 0, cardKey: 'm3',
+          chords: noCapoChords, capo: 0, cardKey: 'm3', shapeKey: transposeRoot(shapeKey, (capo + delta) % 12),
           note: `카포를 빼고, 실제 음 그대로 코드를 잡는 방법입니다.`,
         });
       }
