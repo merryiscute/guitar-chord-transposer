@@ -447,12 +447,71 @@ function buildSlashSuffix(suffix, bass) {
   return null;
 }
 
+// ── 분수코드 운지 자동 합성 ──
+// 일반 코드 포지션에서 6번줄/5번줄에 베이스음을 배치하고
+// 그보다 낮은 줄은 뮤트해서 분수코드 운지를 만든다.
+const OPEN_PITCH = [4, 9, 2, 7, 11, 4]; // E A D G B e (C 기준 반음)
+
+function synthesizeSlash(pos, bass) {
+  const bassPitch = DB_KEYS.indexOf(bass);
+  const { frets, fingers, baseFret } = pos;
+
+  // 포지션의 운지 범위 (실제 프렛 번호)
+  const fretted = frets.filter(f => f > 0).map(f => baseFret + f - 1);
+  const lo = fretted.length ? Math.min(...fretted) : 1;
+  const hi = fretted.length ? Math.max(...fretted) : 1;
+
+  // 베이스 줄 후보: 6번줄(idx 0) 우선, 다음 5번줄(idx 1)
+  for (const si of [0, 1]) {
+    // 이 줄에서 베이스음이 나오는 가장 낮은 프렛 (0 = 개방현)
+    for (let actualFret = 0; actualFret <= hi + 2; actualFret++) {
+      if ((OPEN_PITCH[si] + actualFret) % 12 !== bassPitch) continue;
+      // 운지 가능성: 개방현이거나 기존 운지 범위 ±2 프렛 이내
+      if (actualFret !== 0 && (actualFret < lo - 2 || actualFret > hi + 2)) continue;
+      // 전체 스팬이 4프렛(다이어그램 5칸)을 넘으면 불가
+      if (actualFret !== 0) {
+        const span = Math.max(hi, actualFret) - Math.min(lo, actualFret);
+        if (span > 4) continue;
+      }
+
+      const newFrets = [...frets];
+      const newFingers = fingers ? [...fingers] : null;
+      // 베이스 줄보다 낮은 줄은 뮤트
+      for (let m = 0; m < si; m++) {
+        newFrets[m] = -1;
+        if (newFingers) newFingers[m] = 0;
+      }
+      // 베이스음 배치 (baseFret 기준 상대 프렛으로 변환)
+      const newBase = actualFret !== 0 && actualFret < baseFret ? actualFret : baseFret;
+      if (newBase !== baseFret) {
+        // baseFret을 내려야 하면 모든 프렛 재계산
+        const shift = baseFret - newBase;
+        for (let i = 0; i < 6; i++) if (newFrets[i] > 0) newFrets[i] += shift;
+      }
+      newFrets[si] = actualFret === 0 ? 0 : actualFret - newBase + 1;
+      if (newFrets[si] < 0 || newFrets[si] > 5) continue;
+      if (newFingers) newFingers[si] = 0; // 합성이라 손가락 번호 미지정
+
+      return { frets: newFrets, fingers: newFingers, baseFret: newBase, barres: pos.barres ?? [] };
+    }
+  }
+  return null;
+}
+
 function getPositions(root, suffix, bass) {
   if (bass) {
     const ss = buildSlashSuffix(suffix, bass);
     if (ss && DB?.[root]?.[ss]) return { positions: DB[root][ss], isSlash: true };
+    // DB에 없으면 일반 코드 포지션에서 합성 시도
     const plain = DB?.[root]?.[suffix];
-    return plain ? { positions: plain, isSlash: false, fallback: true } : null;
+    if (!plain) return null;
+    const synthesized = [];
+    for (const p of plain) {
+      const sp = synthesizeSlash(p, bass);
+      if (sp) synthesized.push(sp);
+    }
+    if (synthesized.length > 0) return { positions: synthesized, isSlash: true, synthesized: true };
+    return { positions: plain, isSlash: false, fallback: true };
   }
   const plain = DB?.[root]?.[suffix];
   return plain ? { positions: plain, isSlash: false } : null;
@@ -651,8 +710,9 @@ function toggleDiagram(rowIdx) {
     if (!result) {
       inner += `<div class="no-voicing">데이터 없음</div>`;
     } else {
-      const { positions, fallback } = result;
+      const { positions, fallback, synthesized } = result;
       if (fallback) inner += `<div style="font-size:0.65rem;color:#a06040;margin-bottom:4px">※ 분수코드 운지 없음 (근사)</div>`;
+      if (synthesized) inner += `<div style="font-size:0.65rem;color:#6090c0;margin-bottom:4px">⚙ 자동 생성 운지</div>`;
       inner += renderDiagram(positions[0], chord.root, chord.bass);
       if (positions.length>1) {
         inner += `<div class="pos-switch">`;
